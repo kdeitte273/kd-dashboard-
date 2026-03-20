@@ -3229,7 +3229,10 @@ function alertToContract(a){
   };
 }
 
-// Convert Supabase contract format to dashboard format
+const SUPABASE_URL = "https://gfbgxgoykboclvfeaaeo.supabase.co";
+const SUPABASE_KEY = "sb_publishable_j7lVIgpMvY6DOMca01MYtw_HzclLkqKOGch7BYl3bwv_UVT0TBsFhyoWY83Cxe1q";
+
+// Convert Supabase contract to dashboard format
 function convertSupabaseContract(c, index) {
   const noticeType = c.notice_type || "solicitation";
   const priorityMap = {
@@ -3237,7 +3240,7 @@ function convertSupabaseContract(c, index) {
     blanket_purchase:6,idiq:7,award_notice:8,special_notice:9,justification:10,modification:11
   };
   return {
-    id: "sb_" + (c.notice_id||index).replace(/[^a-zA-Z0-9]/g,"_"),
+    id: "sb_" + (c.notice_id||index).toString().replace(/[^a-zA-Z0-9]/g,"_"),
     rank: index + 1,
     sol: c.sol || c.notice_id || "UNKNOWN",
     title: c.title || "Untitled Contract",
@@ -3250,18 +3253,14 @@ function convertSupabaseContract(c, index) {
     setAside: c.set_aside || "Unrestricted",
     naics: c.naics || "531110",
     value: "Verify on SAM.gov",
-    deadline: c.deadline || "TBD",
+    deadline: c.deadline || "2099-01-01",
     moveInDate: null,
-    publishedDate: c.published_date || "",
     poc: c.poc_email || "Verify on SAM.gov",
-    pocName: c.poc_name || "",
-    pocPhone: c.poc_phone || "",
-    samUrl: c.sam_url || "https://sam.gov",
     verified: true,
     realData: true,
     scannedIn: true,
     status: noticeType==="solicitation"?"Active Pursuit":noticeType==="sources_sought"?"Respond Now":"On Radar",
-    tags: ["Real SAM.gov Data", c.set_aside||"", c.city||"", c.state||""].filter(Boolean),
+    tags: ["Real SAM.gov Data", c.set_aside||"Open", c.city||"", c.state||""].filter(Boolean),
     extension: {extendable:false,options:0,length:"N/A",totalDuration:"Verify on SAM.gov"},
     sow: {
       units: "Verify on SAM.gov",
@@ -3272,70 +3271,78 @@ function convertSupabaseContract(c, index) {
       requirements: [
         "Pull full SOW from SAM.gov — search Notice ID " + (c.notice_id||""),
         "Verify set-aside eligibility before bidding",
-        "Check all attachments and amendments on SAM.gov",
+        "Check all attachments on SAM.gov",
       ],
       lodgingSchedule: {
         type:"continuous",typeLabel:"Verify on SAM.gov",
         nightsPerYear:null,weeksPerYear:null,
         specificDates:"Pull from SAM.gov Notice ID "+(c.notice_id||""),
-        scheduleNotes:"Full schedule details in SAM.gov solicitation documents.",
+        scheduleNotes:"Full schedule in SAM.gov solicitation documents.",
       },
     },
     nextAction: "Search Notice ID "+(c.notice_id||"")+" on SAM.gov for full details, SOW, deadline, and requirements.",
     priority: priorityMap[noticeType]||99,
-    description: c.description||"",
   };
 }
 
-function AutoRefreshBar({onAddContract, onSetSupabaseContracts}) {
+async function fetchFromSupabase() {
+  try {
+    const res = await fetch(
+      SUPABASE_URL + "/rest/v1/contracts?select=*&order=priority.asc,deadline.asc&limit=500",
+      {headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+SUPABASE_KEY}}
+    );
+    if (!res.ok) return [];
+    const data = await res.json();
+    return Array.isArray(data) ? data : [];
+  } catch(e) {
+    console.log("Supabase fetch error:", e.message);
+    return [];
+  }
+}
+
+async function triggerSAMScan() {
+  try {
+    await fetch("/api/scan", {method:"POST"});
+  } catch(e) {
+    console.log("Scan trigger (non-fatal):", e.message);
+  }
+}
+
+function AutoRefreshBar({onSetSupabaseContracts}) {
   const [secondsLeft, setSecondsLeft] = useState(REFRESH_INTERVAL);
   const [lastChecked, setLastChecked] = useState(null);
   const [checking, setChecking] = useState(false);
   const [contractCount, setContractCount] = useState(0);
   const timerRef = useRef(null);
-  const onAddRef = useRef(onAddContract);
   const onSetRef = useRef(onSetSupabaseContracts);
-  useEffect(()=>{ onAddRef.current = onAddContract; },[onAddContract]);
   useEffect(()=>{ onSetRef.current = onSetSupabaseContracts; },[onSetSupabaseContracts]);
 
   const runCheck = useCallback(async (manual) => {
     setChecking(true);
     setSecondsLeft(REFRESH_INTERVAL);
     try {
-      // If manual scan — trigger the backend scanner first
-      if(manual) {
-        try {
-          await fetch("/api/scan", {method:"POST"});
-          // Wait a moment for scanner to finish
-          await new Promise(r=>setTimeout(r,3000));
-        } catch(e) {
-          console.log("Scan trigger:", e.message);
-        }
+      if (manual) {
+        await triggerSAMScan();
+        await new Promise(r => setTimeout(r, 4000));
       }
-      // Always fetch latest contracts from Supabase
-      const response = await fetch("/api/contracts");
-      if(response.ok) {
-        const data = await response.json();
-        if(data.contracts && data.contracts.length > 0) {
-          // Convert Supabase contracts to dashboard format and set them
-          const converted = data.contracts.map((c, i) => convertSupabaseContract(c, i));
-          if(onSetRef.current) onSetRef.current(converted);
-          setContractCount(data.contracts.length);
-        }
+      const contracts = await fetchFromSupabase();
+      if (contracts.length > 0) {
+        const converted = contracts.map((c, i) => convertSupabaseContract(c, i));
+        if (onSetRef.current) onSetRef.current(converted);
+        setContractCount(contracts.length);
       }
-      setLastChecked(new Date());
-    } catch(e){
-      console.error("SAM scan error:",e);
-      setLastChecked(new Date());
+    } catch(e) {
+      console.log("runCheck error (non-fatal):", e.message);
     }
+    setLastChecked(new Date());
     setChecking(false);
-  },[]);
+  }, []);
 
   useEffect(()=>{
-    runCheck();
-    timerRef.current=setInterval(()=>{
+    runCheck(false);
+    timerRef.current = setInterval(()=>{
       setSecondsLeft(s=>{
-        if(s<=1){runCheck();return REFRESH_INTERVAL;}
+        if(s<=1){runCheck(false);return REFRESH_INTERVAL;}
         return s-1;
       });
     },1000);
@@ -3351,8 +3358,8 @@ function AutoRefreshBar({onAddContract, onSetSupabaseContracts}) {
       <div style={{background:checking?"#1b5e20":NAV+"ee",padding:"6px 20px",display:"flex",alignItems:"center",gap:12,flexWrap:"wrap"}}>
         {checking?(
           <div style={{display:"flex",alignItems:"center",gap:6}}>
-            <div style={{width:12,height:12,borderRadius:"50%",background:"#69f0ae",animation:"pulse 1s infinite"}}/>
-            <span style={{fontSize:11,color:"#fff",fontWeight:700}}>🔍 Scanning SAM.gov — auto-adding new contracts to your list...</span>
+            <div style={{width:12,height:12,borderRadius:"50%",background:"#69f0ae"}}/>
+            <span style={{fontSize:11,color:"#fff",fontWeight:700}}>Scanning SAM.gov for real contracts...</span>
           </div>
         ):(
           <div style={{display:"flex",alignItems:"center",gap:8}}>
@@ -3368,7 +3375,7 @@ function AutoRefreshBar({onAddContract, onSetSupabaseContracts}) {
             </div>
             <div>
               <div style={{fontSize:11,color:"#fff",fontWeight:700}}>Next scan in {mins}m {secs.toString().padStart(2,"0")}s · New contracts auto-add to list</div>
-              {lastChecked&&<div style={{fontSize:9,color:"rgba(255,255,255,0.6)"}}>Last checked: {lastChecked.toLocaleTimeString()}</div>}
+              {lastChecked&&<div style={{fontSize:9,color:"rgba(255,255,255,0.6)"}}>Last checked: {lastChecked.toLocaleTimeString()} · {contractCount} real contracts loaded</div>}
             </div>
           </div>
         )}
@@ -3376,43 +3383,16 @@ function AutoRefreshBar({onAddContract, onSetSupabaseContracts}) {
           style={{background:"rgba(255,255,255,0.15)",color:"#fff",border:"1px solid rgba(255,255,255,0.3)",borderRadius:6,padding:"3px 10px",fontSize:11,fontWeight:700,cursor:checking?"not-allowed":"pointer",opacity:checking?0.5:1}}>
           {checking?"Scanning...":"🔄 Scan Now"}
         </button>
-        {alerts.length>0&&(
-          <button onClick={()=>setShowAlerts(s=>!s)}
-            style={{background:"#69f0ae",color:"#1b5e20",border:"none",borderRadius:6,padding:"3px 10px",fontSize:11,fontWeight:700,cursor:"pointer"}}>
-            ✅ {alerts.length} Added {showAlerts?"▲":"▼"}
-          </button>
-        )}
         <div style={{marginLeft:"auto",fontSize:10,color:"rgba(255,255,255,0.5)"}}>Auto-scan every 15 min · WOSB NAICS 531110+721110</div>
       </div>
       <div style={{height:3,background:"rgba(255,255,255,0.1)",position:"relative"}}>
         <div style={{position:"absolute",left:0,top:0,height:"100%",background:"#69f0ae",width:`${pct}%`,transition:"width 1s linear"}}/>
       </div>
-      {showAlerts&&alerts.length>0&&(
-        <div style={{background:"#1a2340",borderBottom:"2px solid #69f0ae",padding:"10px 20px"}}>
-          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
-            <span style={{fontSize:12,fontWeight:900,color:"#69f0ae",textTransform:"uppercase",letterSpacing:0.8}}>✅ {alerts.length} Contract{alerts.length!==1?"s":""} Auto-Added to Your List</span>
-            <button onClick={()=>setAlerts([])} style={{background:"none",border:"1px solid #69f0ae",color:"#69f0ae",borderRadius:4,padding:"2px 8px",fontSize:10,fontWeight:700,cursor:"pointer"}}>Dismiss</button>
-          </div>
-          <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
-            {alerts.map((a,i)=>(
-              <div key={i} style={{background:"rgba(255,255,255,0.07)",border:"1px solid rgba(105,240,174,0.3)",borderRadius:8,padding:"10px 14px",minWidth:220,maxWidth:300,flex:"1"}}>
-                <div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}>
-                  <span style={{fontSize:10,fontWeight:800,color:"#69f0ae",textTransform:"uppercase"}}>{a.noticeType?.replace(/_/g," ")} · {a.city}, {a.state}</span>
-                  <span style={{fontSize:9,color:"rgba(255,255,255,0.4)"}}>{a.timestamp}</span>
-                </div>
-                <div style={{fontSize:12,fontWeight:800,color:"#fff",marginBottom:2,lineHeight:1.3}}>{a.title}</div>
-                <div style={{fontSize:10,color:"rgba(255,255,255,0.6)",marginBottom:4}}>{a.agency}</div>
-                <div style={{fontSize:10,fontFamily:"monospace",color:"#69f0ae"}}>🪪 {a.sol}</div>
-                <div style={{marginTop:6,fontSize:10,background:"rgba(105,240,174,0.15)",borderRadius:4,padding:"3px 8px",color:"#69f0ae",fontWeight:700}}>✅ Added — scroll up in list to see it</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
       <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}`}</style>
     </div>
   );
 }
+
 
 export default function Dashboard(){
   const [selected,setSelected]=useState(null);
@@ -3521,7 +3501,7 @@ export default function Dashboard(){
       </div>
 
       {/* Auto Refresh Bar — passes addScannedContract so new contracts go straight into list */}
-      <AutoRefreshBar onAddContract={addScannedContract} onSetSupabaseContracts={setSupabaseContracts}/>
+      <AutoRefreshBar onSetSupabaseContracts={setSupabaseContracts}/>
 
       {/* Research target warning */}
       <div style={{background:"#fff8e1",borderBottom:"1px solid #ffe08a",padding:"6px 20px",
