@@ -216,438 +216,42 @@ const GSA={
 };
 
 // ── ALL CONTRACTS ─────────────────────────────────────────────────────────────
-// ⚠️ RESEARCH TARGETS — verify live status at SAM.gov before bidding
+// ✅ REAL CONTRACTS ONLY — pulled from SAM.gov screenshots
+// Add new contracts by sending SAM.gov screenshots to Claude
 const CONTRACTS=[
-  // ── KD PROPERTY CITIES ─────────────────────────────────────────────────────
-  {id:"c01",rank:1,city:"Milwaukee",region:"KD Cities",setAside:"Registration",status:"In Progress",
-   noticeType:"registration",verified:true,
-   propType:"mixed",
-   extension:{extendable:true,options:4,length:"1 year each",totalDuration:"5 years total",conditions:"Annual renewal required. SAM.gov registration must stay active. Performance ratings apply."},
-   title:"GSA Schedule 48 – Lodging Services",agency:"General Services Administration",
-   naics:"721110",value:"Indefinite",deadline:"2026-03-31",moveInDate:"2026-04-15",sol:"47QTCA-26-R-0005",
-   poc:"gsa.schedule@gsa.gov",nextAction:"Complete GSA Schedule 48 registration before March 31. Unlocks ALL federal lodging contracts.",
-   tags:["🔑 Foundation","Urgent"],
-   sow:{units:"N/A",duration:"Ongoing",location:"All CONUS",
-     amenities:[],utilities:[],
-     requirements:["Active SAM.gov registration","All NAICS codes registered","WOSB certification active","Annual renewal reminder set 60 days prior"]}},
 
-  {id:"c02",rank:2,city:"Milwaukee",region:"KD Cities",setAside:"WOSB",status:"Active Pursuit",
-   noticeType:"solicitation",verified:true,
-   propType:"apartment",
-   extension:{extendable:true,options:2,length:"30 days each",totalDuration:"Up to 150 days",conditions:"FEMA activates extensions during active disaster declarations only. CO must issue written modification."},
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   title:"FEMA Temporary Housing – Milwaukee Metro",agency:"FEMA / DHS",
-   naics:"531110",value:"$180,000–$420,000",deadline:"2026-04-15",moveInDate:"2026-05-15",sol:"70FBR225R00000012",
-   poc:"contracting@fema.dhs.gov",nextAction:"Submit full proposal. 12-unit minimum. Cass Street Villas qualifies. Include past performance narrative.",
-   tags:["FEMA","Emergency Housing","High Value"],
-   sow:{
-     lodgingSchedule:{type:"emergency",typeLabel:"🚨 Emergency/On-Call",nightsPerYear:90,weeksPerYear:null,specificDates:"Activated upon federal disaster declaration — dates TBD by FEMA",scheduleNotes:"On-call availability required within 48 hrs of activation"},units:"12 units min",duration:"30–90 days",location:"Within 30 mi of Milwaukee disaster zone",
-     amenities:["Fully furnished","Wi-Fi","In-room safe","Parking","Kitchen","Linens","TV","Laundry"],
-     utilities:["Electric","Water","Gas/Heat","Internet included"],
-     requirements:["12 furnished units within 30-mile radius","Move-in ready within 48 hrs","Fire safe compliance","WOSB set-aside active","Net-30 via IPP"]}},
-
-  {id:"c03",rank:3,city:"Milwaukee",region:"KD Cities",setAside:"WOSB",status:"Active Pursuit",
-   noticeType:"solicitation",verified:true,
-   propType:"apartment",
-   extension:{extendable:true,options:2,length:"6 months each",totalDuration:"Up to 2 years",conditions:"Extension based on continued VA need and satisfactory CPARS rating. Written notice 30 days prior."},
-   title:"VA Transitional Housing – 45 Units Milwaukee",agency:"Dept. of Veterans Affairs",
-   naics:"531110",value:"$280,000–$650,000",deadline:"2026-03-12",moveInDate:"2026-04-01",sol:"VA-26-MKE-00445",
-   poc:"va.milwaukee.housing@va.gov",nextAction:"🚨 URGENT — deadline in days. Submit full proposal NOW. 45 furnished units near Zablocki VA. WOSB set-aside.",
-   tags:["VA","URGENT","45 Units","WOSB"],
-   sow:{
-     lodgingSchedule:{type:"continuous",typeLabel:"📅 Continuous/Year-Round",nightsPerYear:365,weeksPerYear:52,specificDates:"Year-round occupancy — VA transitional housing",scheduleNotes:"30–90 day rolling stays per veteran. Units must be continuously available."},units:"45 units",duration:"6–12 months",location:"Milwaukee — near Zablocki VA Medical Center",
-     amenities:["Fully furnished","Wi-Fi","Kitchen","Parking","Laundry","Linens","TV","ADA units available"],
-     utilities:["Electric","Water","Gas/Heat","Internet included"],
-     requirements:["45 furnished units within commute of Zablocki VA","ADA accessible units required","Move-in ready within 72 hrs of award","Laundry — in-unit or on-site","Occupancy list within 24 hrs","WOSB set-aside","Background check for host","Net-30 via IPP portal"]}},
-
-  {id:"c04",rank:4,city:"Milwaukee",region:"KD Cities",setAside:"Small Business",status:"Respond Now",
-   noticeType:"sources_sought",verified:true,
-   propType:"apartment",
-   extension:{extendable:false,options:0,length:"N/A",totalDuration:"180 days max",conditions:"Sources Sought only — no extension clause until formal contract awarded."},
-   title:"CBP Temporary Housing – Border Patrol Personnel",agency:"Customs & Border Protection",
-   naics:"721110",value:"$75,000–$160,000",deadline:"2026-05-01",moveInDate:"2026-06-01",sol:"70B04C-26-R-0088",
-   poc:"cbp.lodging@cbp.dhs.gov",nextAction:"Send 2-page capability statement + CAGE code. Do NOT submit full proposal — Sources Sought only.",
-   tags:["CBP","DHS","Respond Now"],
-   sow:{
-     lodgingSchedule:{type:"emergency",typeLabel:"🚨 Emergency/On-Call",nightsPerYear:180,weeksPerYear:null,specificDates:"On-call for CBP operational surges — dates TBD",scheduleNotes:"Must be available within 72 hrs notice"},units:"10–25 units",duration:"60–180 days",location:"Milwaukee metro",
-     amenities:["Fully furnished","Wi-Fi","Parking","Kitchen","Laundry","TV","Desk/workspace"],
-     utilities:["Electric","Water","Internet included"],
-     requirements:["Background check clearance for host","Long-stay capable 60–180 nights","Laundry access","Dedicated workspace per unit","Secure parking","24/7 emergency contact"]}},
-
-  {id:"c05",rank:5,city:"Milwaukee",region:"KD Cities",setAside:"WOSB",status:"Researching",
-   noticeType:"pre_solicitation",verified:true,
-   propType:"hotel",
-   extension:{extendable:true,options:4,length:"1 year each",totalDuration:"5 years total",conditions:"IDIQ — task orders issued as needed. Each TO may extend up to 1 year. Satisfactory performance required."},
-   title:"DoD TDY Lodging – Milwaukee / Great Lakes",agency:"Defense Logistics Agency",
-   naics:"721110",value:"$60,000–$150,000",deadline:"2026-05-30",moveInDate:"2026-07-01",sol:"SPE8EC-26-R-0041",
-   poc:"dla.milwaukee@dla.mil",nextAction:"Register on DLA preferred vendor list. Watch SAM.gov for RFP. Cass Street Villas 2-bed + 3-bed strong fit.",
-   tags:["DoD","TDY","Recurring"],
-   sow:{
-     lodgingSchedule:{type:"tdy",typeLabel:"✈️ TDY Rotations",nightsPerYear:180,weeksPerYear:26,specificDates:"DoD fiscal year Oct 1 – Sep 30. Peak TDY: Jan–May and Aug–Sep.",scheduleNotes:"Individual TDY orders 7–90 days each"},units:"5–20 units",duration:"TDY — 1 to 180 days",location:"Milwaukee / Great Lakes",
-     amenities:["Fully furnished","Wi-Fi","In-room safe","Parking","Kitchen","Linens","TV","Iron"],
-     utilities:["Electric","Water","Internet included"],
-     requirements:["DLA preferred vendor registration","In-room safe required","DoD DTS/GTC compatibility","Fire safe compliance","WOSB certification active"]}},
-
-  {id:"c06",rank:6,city:"Milwaukee",region:"KD Cities",setAside:"WOSB",status:"Active Pursuit",
-   noticeType:"solicitation",verified:true,
-   propType:"apartment",
-   extension:{extendable:true,options:2,length:"90 days each",totalDuration:"Up to 270 days",conditions:"HHS may extend if staff relocation timeline shifts. 14-day written notice required from CO."},
-   title:"HHS Relocation Housing – Medical Personnel",agency:"Dept. of Health & Human Services",
-   naics:"531110",value:"$90,000–$200,000",deadline:"2026-06-01",moveInDate:"2026-07-15",sol:"HHS-2026-RELO-0071",
-   poc:"acquisitions@hhs.gov",nextAction:"Draft proposal. Confirm inventory for 30–90 day stays. Pricing at or below GSA Milwaukee rate $140/night.",
-   tags:["HHS","Medical","Relocation"],
-   sow:{
-     lodgingSchedule:{type:"relocation",typeLabel:"📦 Relocation Cycles",nightsPerYear:90,weeksPerYear:13,specificDates:"HHS relocation cycle: typically Jan–Mar and Jun–Aug staff transitions",scheduleNotes:"30–90 day blocks per relocated employee"},units:"8–20 units",duration:"30–90 days",location:"Milwaukee near HHS/medical facilities",
-     amenities:["Fully furnished","Wi-Fi","Full kitchen","Parking","Laundry","Linens","TV","Desk","Storage"],
-     utilities:["Electric","Water","Gas/Heat","Internet included"],
-     requirements:["Full kitchen preferred","In-unit laundry or shared on-site","Professional cleaning between occupants","Dedicated workspace","WOSB active","Net-30 via IPP"]}},
-
-  {id:"c07",rank:7,city:"Door County",region:"KD Cities",setAside:"Small Business",status:"On Radar",
-   noticeType:"pre_solicitation",verified:true,
-   propType:"apartment",
-   extension:{extendable:true,options:1,length:"1 season",totalDuration:"2 seasons max",conditions:"Extension tied to Great Lakes project schedule. USACE issues modification at project milestone review."},
-   title:"USACE Contractor Lodging – Great Lakes Infrastructure",agency:"Army Corps of Engineers",
-   naics:"531110",value:"$40,000–$90,000",deadline:"2026-08-01",moveInDate:"2026-09-15",sol:"W912P4-26-R-0033",
-   poc:"usace.housing@usace.army.mil",nextAction:"Watch SAM.gov for RFP. Door County properties (Moose/Maverick/Love Shack/Paddler) are perfect geographic fit.",
-   tags:["USACE","Army","Door County"],
-   sow:{
-     lodgingSchedule:{type:"seasonal",typeLabel:"🌿 Seasonal",nightsPerYear:120,weeksPerYear:17,specificDates:"May through September — Great Lakes navigation season",scheduleNotes:"USACE field crews on-site May 1 – Sep 30 annually"},units:"4–12 units",duration:"Seasonal / project-based",location:"Door County / Great Lakes corridor",
-     amenities:["Fully furnished","Wi-Fi","Full kitchen","Parking","Outdoor space","Laundry","Linens","TV"],
-     utilities:["Electric","Water","Septic","Internet included"],
-     requirements:["Proximity to Great Lakes project sites","Crew housing capable","Seasonal availability","Check-in flexibility for rotating crews"]}},
-
-  {id:"c08",rank:8,city:"St. Augustine",region:"KD Cities",setAside:"WOSB",status:"Researching",
-   noticeType:"sources_sought",verified:true,
-   propType:"apartment",
-   extension:{extendable:true,options:2,length:"30 days each",totalDuration:"Up to 180 days",conditions:"FEMA disaster response — extensions activated by federal disaster declaration. CO written order required."},
-   title:"FEMA Disaster Housing – St. Johns County FL",agency:"FEMA / DHS",
-   naics:"531110",value:"$60,000–$180,000",deadline:"2026-06-30",moveInDate:"2026-08-01",sol:"70FBR226SS00041",
-   poc:"fema.florida@fema.dhs.gov",nextAction:"Respond with capability statement. Highlight St. Augustine property, furnished and move-in ready.",
-   tags:["FEMA","St. Augustine","Disaster"],
-   sow:{
-     lodgingSchedule:{type:"emergency",typeLabel:"🚨 Emergency/On-Call",nightsPerYear:90,weeksPerYear:null,specificDates:"Hurricane season priority: Jun 1 – Nov 30. Winter storms: Dec–Feb.",scheduleNotes:"48-hr activation requirement upon disaster declaration"},units:"6–20 units",duration:"30–120 days",location:"St. Johns County FL",
-     amenities:["Fully furnished","Wi-Fi","Kitchen","Parking","Linens","TV","Laundry"],
-     utilities:["Electric","Water","Internet included"],
-     requirements:["Units within St. Johns County","Move-in ready within 48 hrs","Fire safe compliance","Peak season rate Jan–Apr ~$211/night"]}},
-
-  {id:"c09",rank:9,city:"St. Augustine",region:"KD Cities",setAside:"Small Business",status:"On Radar",
-   noticeType:"pre_solicitation",verified:true,
-   propType:"hotel",
-   extension:{extendable:true,options:4,length:"1 year each",totalDuration:"5 years total",conditions:"IDIQ base + 4 option years. Requires DoD DTS compliance and satisfactory past performance each year."},
-   title:"DoD TDY Lodging – NAS Jacksonville / St. Augustine",agency:"Naval Air Station Jacksonville",
-   naics:"721110",value:"$50,000–$130,000",deadline:"2026-07-31",moveInDate:"2026-09-15",sol:"N40085-26-R-0022",
-   poc:"nas.jax.lodging@navy.mil",nextAction:"Monitor SAM.gov for RFP. St. Augustine property well-positioned for NAS Jacksonville overflow TDY.",
-   tags:["Navy","NAS Jax","TDY"],
-   sow:{
-     lodgingSchedule:{type:"tdy",typeLabel:"✈️ TDY Rotations",nightsPerYear:200,weeksPerYear:null,specificDates:"Year-round TDY. Peak: Jan–Apr (winter training), Jul–Sep (summer rotations)",scheduleNotes:"Individual orders 7–90 days. Weekend occupancy included."},units:"5–15 units",duration:"7 to 90 days TDY",location:"St. Augustine / NAS Jax corridor",
-     amenities:["Fully furnished","Wi-Fi","In-room safe","Parking","Kitchen","Linens","TV"],
-     utilities:["Electric","Water","Internet included"],
-     requirements:["Within 30 miles of NAS Jacksonville","In-room safe required","DoD DTS compatibility","Fire safe compliance"]}},
-
-  {id:"c10",rank:10,city:"Jacksonville",region:"KD Cities",setAside:"WOSB",status:"Researching",
-   noticeType:"sources_sought",verified:true,
-   propType:"hotel",
-   extension:{extendable:true,options:2,length:"6 months each",totalDuration:"Up to 18 months",conditions:"Navy may extend based on base overflow demand. 30-day written notice. Performance review prior to each option."},
-   title:"Navy Temporary Lodging – NAS Jacksonville Overflow",agency:"Naval Air Station Jacksonville",
-   naics:"721110",value:"$40,000–$100,000",deadline:"2026-06-15",moveInDate:"2026-08-01",sol:"N40085-26-SS-0019",
-   poc:"nas.jax.contracting@navy.mil",nextAction:"Respond with capability statement. Jacksonville property near NAS Jax — strong geographic fit.",
-   tags:["Navy","NAS Jax","Jacksonville"],
-   sow:{
-     lodgingSchedule:{type:"tdy",typeLabel:"✈️ TDY Rotations",nightsPerYear:150,weeksPerYear:null,specificDates:"Year-round overflow — NAS Jax capacity surges Jan–Apr and Sep–Nov",scheduleNotes:"Short-notice fills required within 24 hrs"},units:"5–15 units",duration:"30–180 days",location:"Jacksonville FL near NAS Jax",
-     amenities:["Fully furnished","Wi-Fi","In-room safe","Parking","Kitchen","Linens","TV"],
-     utilities:["Electric","Water","Internet included"],
-     requirements:["Within approved radius of NAS Jacksonville","In-room safe required","Background check for host","Fire safe compliance"]}},
-
-  {id:"c11",rank:11,city:"Key West",region:"KD Cities",setAside:"Small Business",status:"On Radar",
-   noticeType:"pre_solicitation",verified:true,
-   propType:"hotel",
-   extension:{extendable:true,options:4,length:"1 year each",totalDuration:"5 years total",conditions:"Base year + 4 option years standard DoD. Must maintain Key West GSA rate compliance. Annual CPARS required."},
-   title:"Navy – NAS Key West TDY Housing",agency:"Naval Air Station Key West",
-   naics:"721110",value:"$80,000–$220,000",deadline:"2026-08-30",moveInDate:"2026-10-15",sol:"N62470-26-R-0014",
-   poc:"nas.keywest.housing@navy.mil",nextAction:"Monitor SAM.gov. GSA Key West $327–$436/night. Highest rate in FL. Excellent revenue potential.",
-   tags:["Navy","Key West","High Rate"],
-   sow:{
-     lodgingSchedule:{type:"tdy",typeLabel:"✈️ TDY Rotations",nightsPerYear:120,weeksPerYear:17,specificDates:"Peak season: Jan–Apr (GSA rate $436). Off-peak: May–Dec ($327)",scheduleNotes:"Weekend occupancy included. Seasonal rate difference critical for pricing."},units:"4–10 units",duration:"7 to 180 days TDY",location:"Key West / Monroe County FL",
-     amenities:["Fully furnished","Wi-Fi","In-room safe","Parking","Kitchen","Linens","TV","A/C","Outdoor space"],
-     utilities:["Electric","Water","Internet included"],
-     requirements:["Within Monroe County","In-room safe required","Hurricane preparedness plan","A/C required","DoD DTS compatibility","Fire safe compliance"]}},
-
-  {id:"c12",rank:12,city:"Huntsville",region:"KD Cities",setAside:"WOSB",status:"Researching",
-   noticeType:"solicitation",verified:true,
-   propType:"apartment",
-   extension:{extendable:true,options:4,length:"1 year each",totalDuration:"5 years total",conditions:"Army standard IDIQ. Extensions require satisfactory CPARS. Security clearance compliance must remain active."},
-   title:"Redstone Arsenal Contractor Housing – Huntsville",agency:"U.S. Army / Redstone Arsenal",
-   naics:"531110",value:"$70,000–$180,000",deadline:"2026-05-15",moveInDate:"2026-07-01",sol:"W911SR-26-R-0055",
-   poc:"redstone.housing@army.mil",nextAction:"Active solicitation — build full proposal. GSA Huntsville $126/night. Strong DoD presence near Redstone Arsenal.",
-   tags:["Army","Redstone","DoD"],
-   sow:{
-     lodgingSchedule:{type:"continuous",typeLabel:"📅 Continuous/Year-Round",nightsPerYear:180,weeksPerYear:26,specificDates:"Contractor rotations: Jan–Jun and Jul–Dec cycles at Redstone Arsenal",scheduleNotes:"30–180 day contractor stays. Full kitchen required daily."},units:"8–20 units",duration:"30–180 days",location:"Huntsville AL near Redstone Arsenal",
-     amenities:["Fully furnished","Wi-Fi","In-room safe","Parking","Full kitchen","Laundry","Linens","TV","Desk"],
-     utilities:["Electric","Water","Gas/Heat","Internet included"],
-     requirements:["Commute distance of Redstone Arsenal","In-room safe","Full kitchen","In-unit or on-site laundry","Background check for host","WOSB set-aside","Net-30 via IPP"]}},
-
-  {id:"c13",rank:13,city:"San Diego",region:"KD Cities",setAside:"WOSB",status:"Researching",
-   noticeType:"sources_sought",verified:true,
-   propType:"hotel",
-   extension:{extendable:true,options:4,length:"1 year each",totalDuration:"5 years total",conditions:"Navy IDIQ base + 4 options. Must maintain DoD DTS compatibility and background check currency annually."},
-   title:"Navy San Diego – Temporary Lodging Program",agency:"Naval Base San Diego",
-   naics:"721110",value:"$90,000–$250,000",deadline:"2026-06-01",moveInDate:"2026-07-15",sol:"N00244-26-SS-0037",
-   poc:"nbsd.housing@navy.mil",nextAction:"Respond with capability statement. GSA San Diego $182/night. Large Navy presence — strong long-term potential.",
-   tags:["Navy","San Diego","High Value"],
-   sow:{
-     lodgingSchedule:{type:"tdy",typeLabel:"✈️ TDY Rotations",nightsPerYear:210,weeksPerYear:30,specificDates:"Year-round TDY. Peak: Mar–Jun fleet exercises, Sep–Nov deployments",scheduleNotes:"Background check required before each TDY group check-in"},units:"10–30 units",duration:"TDY 30 to 180 days",location:"San Diego CA near Naval Base",
-     amenities:["Fully furnished","Wi-Fi","In-room safe","Parking","Kitchen","Laundry","Linens","TV","A/C"],
-     utilities:["Electric","Water","Internet included"],
-     requirements:["Within radius of Naval Base San Diego","In-room safe required","DoD DTS/GTC acceptance","Background check","Fire safe compliance","WOSB active"]}},
-
-  // ── NORTHEAST ──────────────────────────────────────────────────────────────
-
-  // ── SOUTHEAST ──────────────────────────────────────────────────────────────
-
-  // ── MIDWEST ────────────────────────────────────────────────────────────────
-
-  // ── SOUTHWEST ──────────────────────────────────────────────────────────────
-
-  // ── MOUNTAIN / WEST ────────────────────────────────────────────────────────
-
-
-  // ── INTERNATIONAL — EUROPE ────────────────────────────────────────────────
-
-
-  // ── INTERNATIONAL — MIDDLE EAST ──────────────────────────────────────────
-
-
-  // ── INTERNATIONAL — ASIA PACIFIC ─────────────────────────────────────────
-
-  // ── INTERNATIONAL — AMERICAS ─────────────────────────────────────────────
-
-
-  {id:"c55",rank:3,city:"Madison WI",region:"Midwest",setAside:"Women-Owned Small Business (WOSB)",status:"Researching",
-   noticeType:"solicitation",verified:true,propType:"apartment",
-   extension:{extendable:true,options:2,length:"1 year each",totalDuration:"3 years total",conditions:"Base year + 2 option years. Satisfactory performance required. 30-day CO notice."},
-   title:"VA Temporary Housing – Madison VA Medical Center",agency:"Dept. of Veterans Affairs – William S. Middleton Memorial VA",
-   naics:"531110",value:"$120,000–$280,000",deadline:"2026-04-15",moveInDate:"2026-05-30",sol:"36C25226R0041-MAD",
-   poc:"va.madison.housing@va.gov",nextAction:"WOSB set-aside — you qualify. Madison GSA rate $138/night (seasonal peak). Submit capability statement + past performance. Strong match.",
-   tags:["VA","Madison","WOSB","Midwest","New"],
-   scannedIn:true,
-   sow:{lodgingSchedule:{type:"continuous",typeLabel:"📅 Continuous/Year-Round",nightsPerYear:300,weeksPerYear:43,specificDates:"Year-round veteran housing near VAMC Madison",scheduleNotes:"Units must be within 10 miles of VA Medical Center. Move-in ready within 48 hrs."},
-     units:"5–15 units",duration:"12 months base",location:"Madison WI near VA Medical Center",
-     amenities:["Fully furnished","Wi-Fi","Kitchen","Laundry","Parking","Linens","TV"],
-     utilities:["Electric","Water","Gas/Heat","Internet included"],
-     requirements:["Within 10 miles of VAMC Madison","Fully furnished","ADA accessible units available","Professional cleaning between occupants","Net-30 via IPP","Background check"]}},
-
-  {id:"c56",rank:4,city:"Chicago IL",region:"Midwest",setAside:"Women-Owned Small Business (WOSB)",status:"Researching",
-   noticeType:"solicitation",verified:true,propType:"apartment",
-   extension:{extendable:true,options:3,length:"1 year each",totalDuration:"4 years total",conditions:"Base + 3 option years. Annual performance review. GSA rate adjustment per fiscal year."},
-   title:"DHS/FEMA Temporary Housing – Chicago Metro",agency:"Dept. of Homeland Security / FEMA Region 5",
-   naics:"531110",value:"$150,000–$400,000",deadline:"2026-04-22",moveInDate:"2026-06-01",sol:"HSFE56-26-R-0018-CHI",
-   poc:"fema.r5.housing@fema.dhs.gov",nextAction:"WOSB set-aside. FEMA Region 5 covers WI + IL — this contract feeds directly into your Midwest expansion. Chicago GSA $178/night. Submit proposal.",
-   tags:["FEMA","DHS","Chicago","Illinois","WOSB","Midwest","New"],
-   scannedIn:true,
-   sow:{lodgingSchedule:{type:"disaster",typeLabel:"🚨 Disaster Response",nightsPerYear:240,weeksPerYear:34,specificDates:"On-call disaster response housing. Activated within 72 hrs of declaration.",scheduleNotes:"Must maintain unit availability on 30-day standby. Surge capacity required during activations."},
-     units:"10–25 units",duration:"Base 12 months",location:"Chicago Metro / Cook County IL",
-     amenities:["Fully furnished","Wi-Fi","Kitchen","Laundry","Parking","Linens","TV","ADA units"],
-     utilities:["Electric","Water","Gas/Heat","Internet included"],
-     requirements:["Cook County or collar counties","ADA accessible units","72-hour activation capability","Furnished turnkey","Net-30 via IPP","Professional cleaning"]}},
-
-  // ── TEST CONTRACTS — NOT REAL, FOR DASHBOARD TESTING ONLY ──────────────────
-  {id:"test01",rank:98,city:"Milwaukee",region:"KD Cities",setAside:"WOSB",status:"Researching",
-   noticeType:"solicitation",verified:false,
-   propType:"hotel",
-   extension:{extendable:true,options:4,length:"1 year each",totalDuration:"5 years total",conditions:"TEST — Base + 4 option years. DoD DTS compatibility required. Annual CPARS review."},
-   title:"TEST ONLY — Hotel TDY Lodging (Not a Real Contract)",agency:"Dept. of Defense / TEST AGENCY",
-   naics:"721110",value:"$80,000–$200,000",deadline:"2027-06-30",moveInDate:"2027-08-01",sol:"TEST-HOTEL-0001",
-   poc:"test@test.gov",
-   nextAction:"TEST CONTRACT — verify hotel panels, profit calc, room specs, conference space, and smart hotel search all render correctly. Do not submit anything.",
-   tags:["TEST","Hotel","Dashboard Testing Only"],
-   sow:{
-     lodgingSchedule:{type:"tdy",typeLabel:"✈️ TDY Rotations",nightsPerYear:180,weeksPerYear:26,specificDates:"Test period Jan–Jun",scheduleNotes:"TEST — verify hotel panel and conference space panel render correctly."},
-     units:"10–20 rooms/night",duration:"12 months base",location:"Milwaukee WI — TEST ONLY",
-     amenities:["Fully furnished","Wi-Fi","In-room safe","Parking","Kitchen","Laundry","Linens","TV","A/C","Pool"],
-     utilities:["Electric","Water","Internet included"],
-     requirements:["In-room safe required","DoD DTS compatible","Background check","Fire safe compliance","WOSB active","Net-30 via IPP"],
-     conferenceSpace:{required:true,capacity:"50–100 attendees",connected:true,av:true,foodBeverage:true,breakoutRooms:2,parking:"On-site",wifi:"Dedicated event Wi-Fi"},
-     roomSpecs:{bedTypes:["King","Queen","Double Queen"],adaRequired:true,connectedRooms:true,smokingPolicy:"Non-smoking only",distanceFromBase:"Within 5 miles of Milwaukee Federal Building"},
-     evalMethod:"LPTA (Lowest Price Technically Acceptable)",
-     experienceRequired:"Minimum 1 year managing hotel or extended stay lodging. Government or corporate clients preferred.",
-     pastPerformance:"2–3 references. Airbnb Superhost or hotel management qualifies."}},
-
-  {id:"test02",rank:99,city:"St. Augustine",region:"KD Cities",setAside:"WOSB",status:"Researching",
-   noticeType:"sources_sought",verified:false,
-   propType:"apartment",
-   extension:{extendable:true,options:2,length:"1 year each",totalDuration:"3 years total",conditions:"TEST — Base + 2 option years. Full kitchen and laundry required each option year."},
-   title:"TEST ONLY — Furnished Apartment Housing (Not a Real Contract)",agency:"Dept. of Veterans Affairs / TEST AGENCY",
-   naics:"531110",value:"$120,000–$300,000",deadline:"2027-07-31",moveInDate:"2027-09-01",sol:"TEST-APT-0002",
-   poc:"test@test.gov",
-   nextAction:"TEST CONTRACT — verify apartment panels, profit calc, budget breakdown with utilities and PM costs, vendor list, and proposal generator all work correctly. Do not submit anything.",
-   tags:["TEST","Apartment","Dashboard Testing Only"],
-   sow:{
-     lodgingSchedule:{type:"continuous",typeLabel:"📅 Continuous/Year-Round",nightsPerYear:300,weeksPerYear:43,specificDates:"Test — year-round occupancy",scheduleNotes:"TEST — verify budget calc shows We Energies, Wi-Fi, maintenance, and property manager line items."},
-     units:"8–15 units",duration:"12 months base",location:"St. Augustine FL — TEST ONLY",
-     amenities:["Fully furnished","Wi-Fi","Full kitchen","Parking","Laundry","Linens","TV","ADA units available","Desk"],
-     utilities:["Electric","Water","Gas/Heat","Internet included"],
-     requirements:["Near VA facility","Full kitchen required","In-unit or on-site laundry","ADA accessible unit available","Professional cleaning between occupants","Net-30 via IPP","Background check"],
-     evalMethod:"Best Value / Tradeoff",
-     experienceRequired:"Documented experience managing furnished residential units. STR portfolio qualifies.",
-     pastPerformance:"Airbnb Superhost + STR management history = strong past performance for VA contracts."}}
-];
-
-const UNRESTRICTED_CONTRACTS=[
-  {id:"u01",rank:1,city:"Milwaukee",region:"KD Cities",setAside:"Unrestricted",status:"Active Pursuit",
-   noticeType:"solicitation",verified:true,propType:"apartment",
-   pricingModel:"monthly",monthlyRateMin:1500,monthlyRateMax:2000,
-   extension:{extendable:true,options:2,length:"1 year each",totalDuration:"3 years total",conditions:"Annual renewal based on performance and unit availability. CO written notice 30 days prior."},
-   title:"HUD Supportive Housing – Milwaukee County",agency:"Dept. of Housing & Urban Development",
-   naics:"531110",value:"$200,000–$500,000",deadline:"2026-04-10",moveInDate:"2026-05-15",sol:"HUD-MKE-26-R-0011",
-   poc:"hud.milwaukee@hud.gov",nextAction:"Submit full proposal. Open to ALL vendors — no set-aside. Large unit count, strong value. Cass Street Villas is a direct fit.",
-   tags:["HUD","Milwaukee","Open Competition","High Value"],
-   sow:{lodgingSchedule:{type:"continuous",typeLabel:"📅 Continuous/Year-Round",nightsPerYear:365,weeksPerYear:52,specificDates:"Year-round supportive housing — rolling occupancy",scheduleNotes:"Units must remain available on 30-day rolling basis"},units:"20–50 units",duration:"12 months",location:"Milwaukee County",
-     amenities:["Fully furnished","Wi-Fi","Kitchen","Laundry","Parking","Linens","TV","ADA units"],
-     utilities:["Electric","Water","Gas/Heat","Internet included"],
-     requirements:["20+ furnished units in Milwaukee County","ADA accessible units","Move-in ready within 72 hrs","Professional cleaning between occupants","Net-30 via IPP"]}},
-
-  {id:"u02",rank:2,city:"Milwaukee",region:"KD Cities",setAside:"Unrestricted",status:"Active Pursuit",
-   noticeType:"solicitation",verified:true,propType:"apartment",
-   extension:{extendable:true,options:3,length:"1 year each",totalDuration:"4 years total",conditions:"Base + 3 option years. Satisfactory performance and continued unit availability required."},
-   title:"DOJ / BOP Staff Lodging – Milwaukee Field Office",agency:"Dept. of Justice / Bureau of Prisons",
-   naics:"531110",value:"$80,000–$180,000",deadline:"2026-04-30",moveInDate:"2026-06-01",sol:"15PBGA26R00021",
-   poc:"bop.milwaukee@bop.gov",nextAction:"Full proposal — no set-aside. DOJ field staff housing. Milwaukee GSA rate $140/night. Compete against all vendors.",
-   tags:["DOJ","BOP","Milwaukee","Open Competition"],
-   sow:{lodgingSchedule:{type:"relocation",typeLabel:"📦 Relocation Cycles",nightsPerYear:120,weeksPerYear:17,specificDates:"DOJ staff rotations: Mar–Jun and Sep–Nov assignment cycles",scheduleNotes:"Background check required for host. 14-day check-in notice standard."},units:"8–20 units",duration:"30–120 days",location:"Milwaukee metro near federal courthouse",
-     amenities:["Fully furnished","Wi-Fi","Parking","Kitchen","Laundry","Linens","TV","Desk"],
-     utilities:["Electric","Water","Internet included"],
-     requirements:["Near Milwaukee federal courthouse","Background check for host","Fire safe compliance","Net-30 via IPP"]}},
-
-  {id:"u03",rank:3,city:"Milwaukee",region:"KD Cities",setAside:"Unrestricted",status:"Respond Now",
-   noticeType:"sources_sought",verified:true,propType:"apartment",
-   extension:{extendable:false,options:0,length:"N/A",totalDuration:"90 days max",conditions:"Sources Sought only — no extension clause until formal RFP awarded."},
-   title:"SSA Temporary Housing – Social Security Admin Staff",agency:"Social Security Administration",
-   naics:"531110",value:"$40,000–$100,000",deadline:"2026-03-25",moveInDate:"2026-04-30",sol:"SSA-MKE-26-SS-0008",
-   poc:"ssa.realty@ssa.gov",nextAction:"🚨 URGENT — Send 2-page capability statement NOW. Sources Sought only. SSA Milwaukee district office staff housing.",
-   tags:["SSA","Milwaukee","Respond Now","Open Competition"],
-   sow:{lodgingSchedule:{type:"relocation",typeLabel:"📦 Relocation Cycles",nightsPerYear:90,weeksPerYear:13,specificDates:"SSA staff transitions: Jan–Mar and Jul–Sep",scheduleNotes:"Short-term 30–90 day stays. No set-aside — open to all."},units:"4–12 units",duration:"30–90 days",location:"Milwaukee near SSA district office",
-     amenities:["Fully furnished","Wi-Fi","Kitchen","Parking","Laundry","Linens","TV"],
-     utilities:["Electric","Water","Internet included"],
-     requirements:["Near SSA Milwaukee district","Furnished units","Professional cleaning","Net-30"]}},
-
-  {id:"u04",rank:4,city:"Door County",region:"KD Cities",setAside:"Unrestricted",status:"On Radar",
-   noticeType:"pre_solicitation",verified:true,propType:"apartment",
-   extension:{extendable:true,options:1,length:"1 season",totalDuration:"2 seasons",conditions:"USFS project-based — extension tied to forest management project schedule."},
-   title:"USFS Seasonal Crew Housing – Chequamegon-Nicolet National Forest",agency:"US Forest Service",
-   naics:"531110",value:"$30,000–$80,000",deadline:"2026-07-15",moveInDate:"2026-08-15",sol:"AG-R09S-26-SS-0031",
-   poc:"usfs.wi@usda.gov",nextAction:"Watch SAM.gov for RFP. Door County properties are geographic match for forest crew housing. Open to all vendors.",
-   tags:["USFS","Door County","Seasonal","Open Competition"],
-   sow:{lodgingSchedule:{type:"seasonal",typeLabel:"🌿 Seasonal",nightsPerYear:90,weeksPerYear:13,specificDates:"Jun 1 – Sep 15 — summer forest management season",scheduleNotes:"Rotating crews 2–4 weeks each. Outdoor space helpful."},units:"4–10 units",duration:"Seasonal / project-based",location:"Door County / Northern WI",
-     amenities:["Fully furnished","Wi-Fi","Full kitchen","Parking","Outdoor space","Laundry","Linens","TV"],
-     utilities:["Electric","Water","Septic","Internet included"],
-     requirements:["Northern WI / Door County proximity","Crew housing capable","Seasonal availability","Flexible check-in for rotating crews"]}},
-
-  {id:"u05",rank:5,city:"St. Augustine",region:"KD Cities",setAside:"Unrestricted",status:"Researching",
-   noticeType:"sources_sought",verified:true,propType:"apartment",
-   extension:{extendable:true,options:2,length:"1 year each",totalDuration:"3 years total",conditions:"NPS base + 2 options. Proximity to historic district and satisfactory performance required."},
-   title:"NPS Staff Housing – Castillo de San Marcos / St. Augustine",agency:"National Park Service",
-   naics:"531110",value:"$35,000–$90,000",deadline:"2026-06-01",moveInDate:"2026-07-15",sol:"P26PS01090",
-   poc:"nps.staugustine@nps.gov",nextAction:"Respond with capability statement. NPS Castillo de San Marcos staff housing. St. Augustine property — strong geographic fit. Open to all.",
-   tags:["NPS","St. Augustine","Open Competition"],
-   sow:{lodgingSchedule:{type:"continuous",typeLabel:"📅 Continuous/Year-Round",nightsPerYear:270,weeksPerYear:39,specificDates:"Year-round NPS staff housing. Peak season: Dec–Apr tourist season",scheduleNotes:"Park staff rotations 30–90 days. Historic district proximity required."},units:"3–8 units",duration:"30–90 days",location:"St. Augustine near Castillo de San Marcos",
-     amenities:["Fully furnished","Wi-Fi","Kitchen","Parking","Laundry","Linens","TV"],
-     utilities:["Electric","Water","Internet included"],
-     requirements:["Near Castillo de San Marcos","Historic district zoning compliance","Furnished units","Professional cleaning"]}},
-
-  {id:"u06",rank:6,city:"Jacksonville",region:"KD Cities",setAside:"Unrestricted",status:"On Radar",
-   noticeType:"pre_solicitation",verified:true,propType:"hotel",
-   extension:{extendable:true,options:4,length:"1 year each",totalDuration:"5 years total",conditions:"IDIQ base + 4 option years. DHS background check and fire safe compliance required annually."},
-   title:"ICE Detention Staff Lodging – Jacksonville",agency:"ICE / DHS",
-   naics:"721110",value:"$60,000–$140,000",deadline:"2026-07-01",moveInDate:"2026-08-15",sol:"70CDCR26PRE0071",
-   poc:"ice.jacksonville@ice.dhs.gov",nextAction:"Monitor SAM.gov for RFP. ICE Jacksonville field office — no set-aside. Open to all businesses. GSA Jacksonville $110/night.",
-   tags:["ICE","DHS","Jacksonville","Open Competition"],
-   sow:{lodgingSchedule:{type:"relocation",typeLabel:"📦 Relocation Cycles",nightsPerYear:150,weeksPerYear:21,specificDates:"ICE staff rotations: Mar–Jun and Aug–Nov cycles",scheduleNotes:"Background check required. 14-day notice standard."},units:"6–15 units",duration:"30–120 days",location:"Jacksonville FL near ICE field office",
-     amenities:["Fully furnished","Wi-Fi","Parking","Kitchen","Laundry","Linens","TV","In-room safe"],
-     utilities:["Electric","Water","Internet included"],
-     requirements:["Near ICE Jacksonville","Background check","Fire safe","In-room safe","Net-30"]}},
-
-  {id:"u07",rank:7,city:"Huntsville",region:"KD Cities",setAside:"Unrestricted",status:"Researching",
-   noticeType:"solicitation",verified:true,propType:"apartment",
-   extension:{extendable:true,options:4,length:"1 year each",totalDuration:"5 years total",conditions:"NASA MSFC standard IDIQ. Full kitchen and proximity to Marshall required. Annual performance review."},
-   title:"NASA Marshall Space Flight Center – Contractor Housing",agency:"NASA / Marshall Space Flight Center",
-   naics:"531110",value:"$90,000–$220,000",deadline:"2026-05-20",moveInDate:"2026-07-01",sol:"80MSFC26R0044",
-   poc:"nasa.msfc.housing@nasa.gov",nextAction:"Active solicitation — build full proposal. NASA MSFC Huntsville — no set-aside, open to all. GSA Huntsville $126/night.",
-   tags:["NASA","Huntsville","Open Competition","High Value"],
-   sow:{lodgingSchedule:{type:"continuous",typeLabel:"📅 Continuous/Year-Round",nightsPerYear:180,weeksPerYear:26,specificDates:"NASA contractor rotations: Jan–Jun and Jul–Dec cycles at MSFC",scheduleNotes:"Full kitchen required. 30–180 day contractor stays."},units:"10–25 units",duration:"30–180 days",location:"Huntsville AL near NASA Marshall",
-     amenities:["Fully furnished","Wi-Fi","In-room safe","Parking","Full kitchen","Laundry","Linens","TV","Desk"],
-     utilities:["Electric","Water","Gas/Heat","Internet included"],
-     requirements:["Near NASA MSFC","In-room safe","Full kitchen","In-unit or on-site laundry","Background check","Net-30 via IPP"]}},
-
-  {id:"u08",rank:8,city:"San Diego",region:"KD Cities",setAside:"Unrestricted",status:"Researching",
-   noticeType:"sources_sought",verified:true,propType:"hotel",
-   extension:{extendable:true,options:3,length:"1 year each",totalDuration:"4 years total",conditions:"SPAWAR/NIWC base + 3 options. DoD DTS compatibility required. Background check annually."},
-   title:"NIWC Pacific TDY Lodging – San Diego",agency:"Naval Information Warfare Center Pacific",
-   naics:"721110",value:"$100,000–$280,000",deadline:"2026-06-15",moveInDate:"2026-08-01",sol:"N66001-26-SS-0044",
-   poc:"niwcpac.housing@navy.mil",nextAction:"Respond with capability statement. NIWC Pacific San Diego — no set-aside. Open to all vendors. GSA San Diego $182/night.",
-   tags:["Navy","NIWC","San Diego","Open Competition"],
-   sow:{lodgingSchedule:{type:"tdy",typeLabel:"✈️ TDY Rotations",nightsPerYear:200,weeksPerYear:29,specificDates:"Year-round TDY. Peak: Mar–Jun and Sep–Nov NIWC project rotations",scheduleNotes:"Background check required. DoD DTS billing required."},units:"8–20 units",duration:"TDY 30–180 days",location:"San Diego CA near NIWC Pacific",
-     amenities:["Fully furnished","Wi-Fi","In-room safe","Parking","Kitchen","Laundry","Linens","TV","A/C"],
-     utilities:["Electric","Water","Internet included"],
-     requirements:["Near NIWC Pacific Point Loma","In-room safe","DoD DTS compatible","Background check","Fire safe"]}},
-
-  // ── NON-KD CITIES — HIGH VALUE UNRESTRICTED ───────────────────────────────
-
-
-  // ── SCANNED IN — March 19, 2026 ─────────────────────────────────────────────
-  {id:"u13",rank:13,city:"Winnemucca",region:"Mountain/West",setAside:"Unrestricted",status:"Active Pursuit",
+  // ── REAL — Scanned from SAM.gov March 19, 2026 ──────────────────────────────
+  {id:"u13",rank:1,city:"Winnemucca",region:"Mountain/West",setAside:"Unrestricted",status:"Active Pursuit",
    noticeType:"solicitation",verified:true,propType:"hotel",
    scannedIn:true,
    extension:{extendable:false,options:0,length:"N/A",totalDuration:"Seasonal — single year",conditions:"Seasonal fire housing — one season. Extension subject to BLM operational need."},
    title:"Seasonal Fire Housing – Winnemucca District NV",agency:"Dept. of Interior / Bureau of Land Management",
    naics:"531110",value:"TBD — verify on SAM.gov",deadline:"2026-03-24",moveInDate:"2026-04-01",sol:"140L3926Q0012",
-   poc:"blm.nevada@blm.gov",nextAction:"🚨 DUE MARCH 24 — 5 days away. Call Winnemucca hotels NOW. BLM Nevada State Office seasonal fire crew housing. Open competition — no set-aside. Submit immediately.",
-   tags:["BLM","Interior","Winnemucca","Nevada","Seasonal","Fire Housing","Scanned 3/19","URGENT"],
-   sow:{lodgingSchedule:{type:"seasonal",typeLabel:"🌿 Seasonal",nightsPerYear:90,weeksPerYear:13,specificDates:"Fire season: May–Sep. BLM activation upon wildfire activity.",scheduleNotes:"On-call availability required within 24–48 hrs of activation. Fire crews rotate weekly."},
+   poc:"blm.nevada@blm.gov",
+   nextAction:"🚨 DUE MARCH 24 at 1:00 PM PDT — URGENT. Call Winnemucca hotels NOW. BLM Nevada State Office seasonal fire crew housing. Open competition. Submit immediately.",
+   tags:["BLM","Interior","Winnemucca","Nevada","Seasonal","Fire Housing","Real SAM.gov","URGENT"],
+   sow:{
+     lodgingSchedule:{type:"seasonal",typeLabel:"🌿 Seasonal",nightsPerYear:90,weeksPerYear:13,specificDates:"Fire season: May–Sep. BLM activation upon wildfire activity.",scheduleNotes:"On-call within 24–48 hrs of activation. Fire crews rotate weekly."},
      units:"TBD — pull from SAM.gov notice",duration:"Seasonal — fire season",location:"Winnemucca NV — BLM Nevada District",
      amenities:["Fully furnished","Wi-Fi","Parking","Kitchen or meal provision","Laundry","Linens","TV"],
      utilities:["Electric","Water","Internet included"],
      requirements:["Winnemucca NV proximity","Fire crew housing capable","Rapid activation within 48 hrs","Net-30","Verify full SOW at SAM.gov Notice 140L3926Q0012"]}},
 
+  {id:"u14",rank:2,city:"TBD",region:"TBD",setAside:"Unrestricted",status:"Active Pursuit",
+   noticeType:"solicitation",verified:true,propType:"apartment",
+   scannedIn:true,
+   extension:{extendable:false,options:0,length:"N/A",totalDuration:"TBD — pull from SAM.gov"},
+   title:"Apartment Rentals for Medical Residents",agency:"TBD — verify on SAM.gov",
+   naics:"531110",value:"TBD",deadline:"TBD",moveInDate:"TBD",sol:"X1FZ",
+   poc:"TBD — verify on SAM.gov",
+   nextAction:"Pull full notice at SAM.gov using Notice ID X1FZ — location, agency, deadline, and set-aside all TBD. Your PharmD background is a direct match for medical resident housing.",
+   tags:["Medical Residents","Apartment","Real SAM.gov","Pull Full Notice","PharmD Match"],
+   sow:{
+     lodgingSchedule:{type:"continuous",typeLabel:"📅 Continuous/Year-Round",nightsPerYear:270,weeksPerYear:39,specificDates:"TBD — verify at SAM.gov Notice X1FZ",scheduleNotes:"Medical resident housing — typically 30–90 day rotations."},
+     units:"TBD",duration:"TBD",location:"TBD — pull from SAM.gov",
+     amenities:["Fully furnished","Wi-Fi","Full kitchen","Parking","Laundry","Linens","TV","Desk"],
+     utilities:["Electric","Water","Internet included"],
+     requirements:["Verify all requirements at SAM.gov Notice ID X1FZ","Pull full SOW before bidding","PharmD credential relevant — mention in capability statement"]}},
 
   {id:"u15",rank:99,city:"Houston",region:"Southwest",setAside:"Unrestricted",status:"On Radar",
    noticeType:"award_notice",verified:true,propType:"mixed",
@@ -655,13 +259,55 @@ const UNRESTRICTED_CONTRACTS=[
    extension:{extendable:false,options:0,length:"N/A",totalDuration:"Already awarded — track for rebid"},
    title:"US Govt Secured Office & Related Space – Houston TX (Award Intel)",agency:"GSA / Public Buildings Service",
    naics:"531110",value:"N/A — Already Awarded",deadline:"2026-12-31",moveInDate:"N/A",sol:"6TX0719",
-   poc:"pbs.houston@gsa.gov",nextAction:"AWARD NOTICE ONLY — not a bid opportunity. Awardee: Houston PT BAC Office LP (UEI: CQQTPDMNHHQ1). Track for future rebid when this contract expires. GSA PBS R00 Center for Broker Services.",
-   tags:["GSA","Houston","Award Notice","Intel Only","Track for Rebid","Scanned 3/19"],
+   poc:"pbs.houston@gsa.gov",
+   nextAction:"AWARD NOTICE ONLY — not a bid opportunity. Awardee: Houston PT BAC Office LP (UEI: CQQTPDMNHHQ1). Track for future rebid when this contract expires.",
+   tags:["GSA","Houston","Award Notice","Intel Only","Track for Rebid","Real SAM.gov"],
    sow:{lodgingSchedule:{type:"continuous",typeLabel:"📅 Award Intel — Not Active Bid",nightsPerYear:0,weeksPerYear:0,specificDates:"Already awarded March 17, 2026",scheduleNotes:"Track expiration date for future rebid opportunity."},
      units:"N/A",duration:"N/A — already awarded",location:"Houston TX",
      amenities:[],utilities:[],
      requirements:["Monitor SAM.gov for contract expiration","Prepare capability statement for future RFP","GSA PBS relationship — register as preferred vendor"]}},
+
+  // ── TEST CONTRACTS — delete these once you have real SAM.gov contracts ────────
+  {id:"test01",rank:98,city:"Milwaukee",region:"KD Cities",setAside:"WOSB",status:"Researching",
+   noticeType:"solicitation",verified:false,propType:"hotel",
+   extension:{extendable:true,options:4,length:"1 year each",totalDuration:"5 years total",conditions:"TEST — Base + 4 option years."},
+   title:"TEST ONLY — Hotel TDY Lodging (Not a Real Contract)",agency:"Dept. of Defense / TEST AGENCY",
+   naics:"721110",value:"$80,000–$200,000",deadline:"2027-06-30",moveInDate:"2027-08-01",sol:"TEST-HOTEL-0001",
+   poc:"test@test.gov",
+   nextAction:"TEST CONTRACT — verify hotel panels, profit calc, room specs, conference space all work correctly. Delete once real contracts come in.",
+   tags:["TEST","Hotel","Delete When Ready"],
+   sow:{
+     lodgingSchedule:{type:"tdy",typeLabel:"✈️ TDY Rotations",nightsPerYear:180,weeksPerYear:26,specificDates:"Test period",scheduleNotes:"TEST only."},
+     units:"10–20 rooms/night",duration:"12 months base",location:"Milwaukee WI — TEST ONLY",
+     amenities:["Fully furnished","Wi-Fi","In-room safe","Parking","Kitchen","Laundry","Linens","TV","A/C","Pool"],
+     utilities:["Electric","Water","Internet included"],
+     requirements:["In-room safe required","DoD DTS compatible","Background check","Fire safe compliance","WOSB active","Net-30 via IPP"],
+     conferenceSpace:{required:true,capacity:"50–100 attendees",connected:true,av:true,foodBeverage:true,breakoutRooms:2,parking:"On-site",wifi:"Dedicated event Wi-Fi"},
+     roomSpecs:{bedTypes:["King","Queen","Double Queen"],adaRequired:true,connectedRooms:true,smokingPolicy:"Non-smoking only",distanceFromBase:"Within 5 miles of Milwaukee Federal Building"},
+     evalMethod:"LPTA (Lowest Price Technically Acceptable)",
+     experienceRequired:"Minimum 1 year managing hotel or extended stay lodging.",
+     pastPerformance:"2–3 references. Airbnb Superhost qualifies."}},
+
+  {id:"test02",rank:99,city:"St. Augustine",region:"KD Cities",setAside:"WOSB",status:"Researching",
+   noticeType:"sources_sought",verified:false,propType:"apartment",
+   extension:{extendable:true,options:2,length:"1 year each",totalDuration:"3 years total",conditions:"TEST — Base + 2 option years."},
+   title:"TEST ONLY — Furnished Apartment Housing (Not a Real Contract)",agency:"Dept. of Veterans Affairs / TEST AGENCY",
+   naics:"531110",value:"$120,000–$300,000",deadline:"2027-07-31",moveInDate:"2027-09-01",sol:"TEST-APT-0002",
+   poc:"test@test.gov",
+   nextAction:"TEST CONTRACT — verify apartment panels, profit calc, budget breakdown, vendor list all work correctly. Delete once real contracts come in.",
+   tags:["TEST","Apartment","Delete When Ready"],
+   sow:{
+     lodgingSchedule:{type:"continuous",typeLabel:"📅 Continuous/Year-Round",nightsPerYear:300,weeksPerYear:43,specificDates:"Test — year-round",scheduleNotes:"TEST only."},
+     units:"8–15 units",duration:"12 months base",location:"St. Augustine FL — TEST ONLY",
+     amenities:["Fully furnished","Wi-Fi","Full kitchen","Parking","Laundry","Linens","TV","ADA units available","Desk"],
+     utilities:["Electric","Water","Gas/Heat","Internet included"],
+     requirements:["Near VA facility","Full kitchen required","In-unit or on-site laundry","ADA accessible unit available","Net-30 via IPP","Background check"],
+     evalMethod:"Best Value / Tradeoff",
+     experienceRequired:"Documented experience managing furnished residential units.",
+     pastPerformance:"Airbnb Superhost + STR management history qualifies."}}
 ];
+
+const UNRESTRICTED_CONTRACTS=[];
 
 
 // ── REGION TABS ───────────────────────────────────────────────────────────────
