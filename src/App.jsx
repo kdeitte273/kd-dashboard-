@@ -3229,39 +3229,99 @@ function alertToContract(a){
   };
 }
 
-function AutoRefreshBar({onAddContract}) {
+// Convert Supabase contract format to dashboard format
+function convertSupabaseContract(c, index) {
+  const noticeType = c.notice_type || "solicitation";
+  const priorityMap = {
+    solicitation:2,combined_synopsis:3,sources_sought:4,pre_solicitation:5,
+    blanket_purchase:6,idiq:7,award_notice:8,special_notice:9,justification:10,modification:11
+  };
+  return {
+    id: "sb_" + (c.notice_id||index).replace(/[^a-zA-Z0-9]/g,"_"),
+    rank: index + 1,
+    sol: c.sol || c.notice_id || "UNKNOWN",
+    title: c.title || "Untitled Contract",
+    agency: c.agency || "Federal Agency",
+    city: c.city || "TBD",
+    state: c.state || "",
+    region: c.region || "Other",
+    noticeType,
+    propType: c.prop_type || "mixed",
+    setAside: c.set_aside || "Unrestricted",
+    naics: c.naics || "531110",
+    value: "Verify on SAM.gov",
+    deadline: c.deadline || "TBD",
+    moveInDate: null,
+    publishedDate: c.published_date || "",
+    poc: c.poc_email || "Verify on SAM.gov",
+    pocName: c.poc_name || "",
+    pocPhone: c.poc_phone || "",
+    samUrl: c.sam_url || "https://sam.gov",
+    verified: true,
+    realData: true,
+    scannedIn: true,
+    status: noticeType==="solicitation"?"Active Pursuit":noticeType==="sources_sought"?"Respond Now":"On Radar",
+    tags: ["Real SAM.gov Data", c.set_aside||"", c.city||"", c.state||""].filter(Boolean),
+    extension: {extendable:false,options:0,length:"N/A",totalDuration:"Verify on SAM.gov"},
+    sow: {
+      units: "Verify on SAM.gov",
+      duration: "Verify on SAM.gov",
+      location: (c.city||"TBD") + (c.state?", "+c.state:""),
+      amenities: [],
+      utilities: [],
+      requirements: [
+        "Pull full SOW from SAM.gov — search Notice ID " + (c.notice_id||""),
+        "Verify set-aside eligibility before bidding",
+        "Check all attachments and amendments on SAM.gov",
+      ],
+      lodgingSchedule: {
+        type:"continuous",typeLabel:"Verify on SAM.gov",
+        nightsPerYear:null,weeksPerYear:null,
+        specificDates:"Pull from SAM.gov Notice ID "+(c.notice_id||""),
+        scheduleNotes:"Full schedule details in SAM.gov solicitation documents.",
+      },
+    },
+    nextAction: "Search Notice ID "+(c.notice_id||"")+" on SAM.gov for full details, SOW, deadline, and requirements.",
+    priority: priorityMap[noticeType]||99,
+    description: c.description||"",
+  };
+}
+
+function AutoRefreshBar({onAddContract, onSetSupabaseContracts}) {
   const [secondsLeft, setSecondsLeft] = useState(REFRESH_INTERVAL);
   const [lastChecked, setLastChecked] = useState(null);
   const [checking, setChecking] = useState(false);
-  const [alerts, setAlerts] = useState([]);
-  const [showAlerts, setShowAlerts] = useState(true);
+  const [contractCount, setContractCount] = useState(0);
   const timerRef = useRef(null);
   const onAddRef = useRef(onAddContract);
+  const onSetRef = useRef(onSetSupabaseContracts);
   useEffect(()=>{ onAddRef.current = onAddContract; },[onAddContract]);
+  useEffect(()=>{ onSetRef.current = onSetSupabaseContracts; },[onSetSupabaseContracts]);
 
-  const runCheck = useCallback(async () => {
+  const runCheck = useCallback(async (manual) => {
     setChecking(true);
     setSecondsLeft(REFRESH_INTERVAL);
     try {
-      const response = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 1000,
-          system: "You are a federal contract monitoring assistant for KD Modern Rentals LLC (CAGE 190G9, WOSB, Milwaukee WI). Simulate checking SAM.gov for new lodging/housing contracts. Return ONLY a JSON array (no markdown, no explanation) of 0-3 contracts. Each must have ALL fields: {sol, title, agency, city, state, deadline (YYYY-MM-DD format), noticeType, propType, setAside, gsaRate, units, action, urgency}. noticeType: 'solicitation' or 'sources_sought' or 'pre_solicitation'. propType: 'apartment' or 'hotel'. setAside: 'Women-Owned Small Business (WOSB)' or 'Small Business' or 'Unrestricted'. urgency: 'high' or 'medium' or 'low'. Focus on WI, IL, MN region. NAICS 531110 and 721110. Sometimes return [].",
-          messages:[{role:"user",content:`SAM.gov scan at ${new Date().toLocaleString()}. Find new WOSB lodging contracts. JSON array only.`}]
-        })
-      });
-      const data = await response.json();
-      const text = data.content?.[0]?.text||"[]";
-      const parsed = JSON.parse(text.replace(/```json|```/g,"").trim());
-      if(parsed.length>0){
-        const stamped = parsed.map(a=>({...a,timestamp:new Date().toLocaleTimeString()}));
-        // AUTO-ADD each detected contract directly into the dashboard list
-        stamped.forEach(a => onAddRef.current(alertToContract(a)));
-        setAlerts(prev=>[...stamped,...prev].slice(0,20));
-        setShowAlerts(true);
+      // If manual scan — trigger the backend scanner first
+      if(manual) {
+        try {
+          await fetch("/api/scan", {method:"POST"});
+          // Wait a moment for scanner to finish
+          await new Promise(r=>setTimeout(r,3000));
+        } catch(e) {
+          console.log("Scan trigger:", e.message);
+        }
+      }
+      // Always fetch latest contracts from Supabase
+      const response = await fetch("/api/contracts");
+      if(response.ok) {
+        const data = await response.json();
+        if(data.contracts && data.contracts.length > 0) {
+          // Convert Supabase contracts to dashboard format and set them
+          const converted = data.contracts.map((c, i) => convertSupabaseContract(c, i));
+          if(onSetRef.current) onSetRef.current(converted);
+          setContractCount(data.contracts.length);
+        }
       }
       setLastChecked(new Date());
     } catch(e){
@@ -3312,7 +3372,7 @@ function AutoRefreshBar({onAddContract}) {
             </div>
           </div>
         )}
-        <button onClick={runCheck} disabled={checking}
+        <button onClick={()=>runCheck(true)} disabled={checking}
           style={{background:"rgba(255,255,255,0.15)",color:"#fff",border:"1px solid rgba(255,255,255,0.3)",borderRadius:6,padding:"3px 10px",fontSize:11,fontWeight:700,cursor:checking?"not-allowed":"pointer",opacity:checking?0.5:1}}>
           {checking?"Scanning...":"🔄 Scan Now"}
         </button>
@@ -3360,6 +3420,7 @@ export default function Dashboard(){
   const [search,setSearch]=useState("");
   const [mainTab,setMainTab]=useState("contracts");
   const [scannedContracts,setScannedContracts]=useState([]);
+  const [supabaseContracts,setSupabaseContracts]=useState([]);
 
   // Load saved scanned contracts from storage on mount
   useEffect(()=>{
@@ -3390,7 +3451,7 @@ export default function Dashboard(){
     setScannedContracts(prev=>prev.filter(c=>c.id!==id));
   }
 
-  const ALL_CONTRACTS=[...scannedContracts,...CONTRACTS,...UNRESTRICTED_CONTRACTS];
+  const ALL_CONTRACTS=[...supabaseContracts,...scannedContracts,...CONTRACTS,...UNRESTRICTED_CONTRACTS];
 
   const filtered=ALL_CONTRACTS.filter(c=>{
     const tab=REGION_TABS.find(t=>t.id===region);
@@ -3460,7 +3521,7 @@ export default function Dashboard(){
       </div>
 
       {/* Auto Refresh Bar — passes addScannedContract so new contracts go straight into list */}
-      <AutoRefreshBar onAddContract={addScannedContract}/>
+      <AutoRefreshBar onAddContract={addScannedContract} onSetSupabaseContracts={setSupabaseContracts}/>
 
       {/* Research target warning */}
       <div style={{background:"#fff8e1",borderBottom:"1px solid #ffe08a",padding:"6px 20px",
