@@ -3,7 +3,7 @@ import { getStore } from "@netlify/blobs";
 export default async (req) => {
   const SAM_API_KEY = Netlify.env.get("SAM_API_KEY");
 
-  console.log("[KD Scanner v8] Starting at", new Date().toISOString());
+  console.log("[KD Scanner v9] Starting at", new Date().toISOString());
   console.log("[KD] SAM key present:", !!SAM_API_KEY);
 
   const BASE_URL = "https://api.sam.gov/opportunities/v2/search";
@@ -18,30 +18,29 @@ export default async (req) => {
   const postedFrom = fmt(pastDate);
   const postedTo = fmt(today);
 
-  // Delay helper to avoid rate limiting
   const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-  const naicsCodes = ["531110", "721110", "721191", "721199", "721211", "531190"];
-  const titleKeywords = [
-    "housing", "lodging", "hotel", "motel", "furnished",
-    "temporary housing", "seasonal housing", "fire housing",
-    "crew housing", "extended stay", "apartment", "transitional",
-    "cottage", "guest house",
+  // Just 3 searches instead of 20 -- stays under rate limit
+  const searches = [
+    { naicsCode: "531110", label: "NAICS 531110 Residential Rentals" },
+    { naicsCode: "721110", label: "NAICS 721110 Hotels" },
+    { keyword: "housing lodging hotel furnished apartment", label: "Housing keywords" },
   ];
 
   async function searchSAM(params, label) {
     const url = new URL(BASE_URL);
     url.searchParams.set("api_key", SAM_API_KEY);
-    url.searchParams.set("limit", "25");
+    url.searchParams.set("limit", "100");
     url.searchParams.set("postedFrom", postedFrom);
     url.searchParams.set("postedTo", postedTo);
     url.searchParams.set("active", "true");
     for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
+
     try {
       const res = await fetch(url.toString());
       if (!res.ok) {
         const body = await res.text();
-        console.error(`[KD] ${label} error: HTTP ${res.status}: ${body.slice(0, 150)}`);
+        console.error(`[KD] ${label} error: HTTP ${res.status}: ${body.slice(0, 200)}`);
         errors.push({ label, status: res.status });
         return [];
       }
@@ -56,20 +55,11 @@ export default async (req) => {
     }
   }
 
-  // Strategy 1: NAICS codes - 1 second between each
-  console.log("[KD] Strategy 1: NAICS code searches");
-  for (const naics of naicsCodes) {
-    const results = await searchSAM({ naicsCode: naics }, `NAICS ${naics}`);
+  for (const search of searches) {
+    const { label, ...params } = search;
+    const results = await searchSAM(params, label);
     allContracts.push(...results);
-    await delay(1000);
-  }
-
-  // Strategy 2: Keywords - 1 second between each
-  console.log("[KD] Strategy 2: Title keyword searches");
-  for (const kw of titleKeywords) {
-    const results = await searchSAM({ keyword: kw }, `Keyword "${kw}"`);
-    allContracts.push(...results);
-    await delay(1000);
+    await delay(3000); // 3 seconds between each call
   }
 
   // Deduplicate
@@ -81,8 +71,15 @@ export default async (req) => {
     return true;
   });
 
-  console.log(`[KD Scanner v8] Total unique contracts found: ${unique.length}`);
+  console.log(`[KD Scanner v9] Total unique contracts found: ${unique.length}`);
   console.log(`[KD] Errors: ${errors.length > 0 ? errors.map((e) => `${e.label}: ${e.status || e.error}`).join(" | ") : "None"}`);
+
+  if (unique.length > 0) {
+    console.log("[KD] Sample titles:");
+    unique.slice(0, 5).forEach((c, i) => {
+      console.log(`  ${i + 1}. ${c.title || c.solicitationTitle || "No title"}`);
+    });
+  }
 
   // Save to Netlify Blobs
   try {
@@ -93,9 +90,9 @@ export default async (req) => {
       contracts: unique,
     };
     await store.setJSON("latest-scan", saveData);
-    console.log(`[KD Scanner v8] Saved ${unique.length} contracts to Netlify Blobs successfully`);
+    console.log(`[KD Scanner v9] Saved ${unique.length} contracts to Netlify Blobs successfully`);
   } catch (err) {
-    console.error("[KD Scanner v8] Blob save error:", err.message);
+    console.error("[KD Scanner v9] Blob save error:", err.message);
   }
 };
 
