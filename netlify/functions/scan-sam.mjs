@@ -10,7 +10,7 @@ const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY;
 
 // CORRECT production URL with /prod/ path
-const BASE_URL = "https://api.sam.gov/prod/opportunities/v2/search";
+const BASE_URL = "https://api.sam.gov/opportunities/v2/search";
 
 // Title keywords to search — SAM API searches within titles only
 const TITLE_SEARCHES = [
