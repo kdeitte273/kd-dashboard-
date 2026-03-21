@@ -3,7 +3,7 @@ import { getStore } from "@netlify/blobs";
 export default async (req) => {
   const SAM_API_KEY = Netlify.env.get("SAM_API_KEY");
 
-  console.log("[KD Scanner v9] Starting at", new Date().toISOString());
+  console.log("[KD Scanner v10] Starting at", new Date().toISOString());
   console.log("[KD] SAM key present:", !!SAM_API_KEY);
 
   const BASE_URL = "https://api.sam.gov/opportunities/v2/search";
@@ -20,11 +20,13 @@ export default async (req) => {
 
   const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-  // Just 3 searches instead of 20 -- stays under rate limit
+  // 5 targeted searches -- covers housing, hotels, AND Yellow Ribbon/events
   const searches = [
     { naicsCode: "531110", label: "NAICS 531110 Residential Rentals" },
-    { naicsCode: "721110", label: "NAICS 721110 Hotels" },
-    { keyword: "housing lodging hotel furnished apartment", label: "Housing keywords" },
+    { naicsCode: "721110", label: "NAICS 721110 Hotels and Motels" },
+    { keyword: "temporary housing lodging furnished apartment", label: "Housing keywords" },
+    { keyword: "Yellow Ribbon event sleeping rooms", label: "Yellow Ribbon events" },
+    { keyword: "reintegration event hotel conference lodging rooms", label: "Military event lodging" },
   ];
 
   async function searchSAM(params, label) {
@@ -71,7 +73,7 @@ export default async (req) => {
     return true;
   });
 
-  console.log(`[KD Scanner v9] Total unique contracts found: ${unique.length}`);
+  console.log(`[KD Scanner v10] Total unique contracts found: ${unique.length}`);
   console.log(`[KD] Errors: ${errors.length > 0 ? errors.map((e) => `${e.label}: ${e.status || e.error}`).join(" | ") : "None"}`);
 
   if (unique.length > 0) {
@@ -90,9 +92,9 @@ export default async (req) => {
       contracts: unique,
     };
     await store.setJSON("latest-scan", saveData);
-    console.log(`[KD Scanner v9] Saved ${unique.length} contracts to Netlify Blobs successfully`);
+    console.log(`[KD Scanner v10] Saved ${unique.length} contracts to Netlify Blobs successfully`);
   } catch (err) {
-    console.error("[KD Scanner v9] Blob save error:", err.message);
+    console.error("[KD Scanner v10] Blob save error:", err.message);
   }
 };
 
