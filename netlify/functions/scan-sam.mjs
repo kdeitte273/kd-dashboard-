@@ -3,7 +3,7 @@ import { getStore } from "@netlify/blobs";
 export default async (req) => {
   const SAM_API_KEY = Netlify.env.get("SAM_API_KEY");
 
-  console.log("[KD Scanner v7] Starting at", new Date().toISOString());
+  console.log("[KD Scanner v8] Starting at", new Date().toISOString());
   console.log("[KD] SAM key present:", !!SAM_API_KEY);
 
   const BASE_URL = "https://api.sam.gov/opportunities/v2/search";
@@ -17,6 +17,9 @@ export default async (req) => {
     `${String(d.getMonth() + 1).padStart(2, "0")}/${String(d.getDate()).padStart(2, "0")}/${d.getFullYear()}`;
   const postedFrom = fmt(pastDate);
   const postedTo = fmt(today);
+
+  // Delay helper to avoid rate limiting
+  const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
   const naicsCodes = ["531110", "721110", "721191", "721199", "721211", "531190"];
   const titleKeywords = [
@@ -38,7 +41,7 @@ export default async (req) => {
       const res = await fetch(url.toString());
       if (!res.ok) {
         const body = await res.text();
-        console.error(`[KD] ${label} error: HTTP ${res.status}: ${body.slice(0, 200)}`);
+        console.error(`[KD] ${label} error: HTTP ${res.status}: ${body.slice(0, 150)}`);
         errors.push({ label, status: res.status });
         return [];
       }
@@ -53,18 +56,23 @@ export default async (req) => {
     }
   }
 
+  // Strategy 1: NAICS codes - 1 second between each
   console.log("[KD] Strategy 1: NAICS code searches");
   for (const naics of naicsCodes) {
     const results = await searchSAM({ naicsCode: naics }, `NAICS ${naics}`);
     allContracts.push(...results);
+    await delay(1000);
   }
 
+  // Strategy 2: Keywords - 1 second between each
   console.log("[KD] Strategy 2: Title keyword searches");
   for (const kw of titleKeywords) {
     const results = await searchSAM({ keyword: kw }, `Keyword "${kw}"`);
     allContracts.push(...results);
+    await delay(1000);
   }
 
+  // Deduplicate
   const seen = new Set();
   const unique = allContracts.filter((c) => {
     const id = c.noticeId || c.solicitationNumber || JSON.stringify(c).slice(0, 50);
@@ -73,9 +81,10 @@ export default async (req) => {
     return true;
   });
 
-  console.log(`[KD Scanner v7] Total unique contracts found: ${unique.length}`);
+  console.log(`[KD Scanner v8] Total unique contracts found: ${unique.length}`);
   console.log(`[KD] Errors: ${errors.length > 0 ? errors.map((e) => `${e.label}: ${e.status || e.error}`).join(" | ") : "None"}`);
 
+  // Save to Netlify Blobs
   try {
     const store = getStore("kd-contracts");
     const saveData = {
@@ -84,9 +93,9 @@ export default async (req) => {
       contracts: unique,
     };
     await store.setJSON("latest-scan", saveData);
-    console.log(`[KD Scanner v7] Saved ${unique.length} contracts to Netlify Blobs successfully`);
+    console.log(`[KD Scanner v8] Saved ${unique.length} contracts to Netlify Blobs successfully`);
   } catch (err) {
-    console.error("[KD Scanner v7] Blob save error:", err.message);
+    console.error("[KD Scanner v8] Blob save error:", err.message);
   }
 };
 
