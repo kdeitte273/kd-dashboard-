@@ -18,11 +18,7 @@ export default async (req) => {
   const delay = (ms) => new Promise((r) => setTimeout(r, ms));
 
   const searches = [
-    { naicsCode: "531110", label: "NAICS 531110 Residential Buildings" },
-    { naicsCode: "721110", label: "NAICS 721110 Hotels and Motels" },
-    { naicsCode: "721199", label: "NAICS 721199 All Other Traveler Accommodation" },
-    { naicsCode: "531190", label: "NAICS 531190 Other Real Estate Lessors" },
-    { naicsCode: "721310", label: "NAICS 721310 Rooming and Boarding Houses" },
+    
     { keyword: "temporary housing",        label: "Temporary housing" },
     { keyword: "furnished housing",         label: "Furnished housing" },
     { keyword: "transitional housing",      label: "Transitional housing" },
