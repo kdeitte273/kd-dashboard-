@@ -3,7 +3,7 @@ import { getStore } from "@netlify/blobs";
 export default async (req) => {
   const SAM_API_KEY = Netlify.env.get("SAM_API_KEY");
 
-  console.log("[KD Scanner v4] Starting at", new Date().toISOString());
+  console.log("[KD Scanner v5] Starting at", new Date().toISOString());
 
   const BASE_URL = "https://api.sam.gov/opportunities/v2/search";
   const allContracts = [];
@@ -46,41 +46,32 @@ export default async (req) => {
     { keyword: "billeting",                 label: "Billeting" },
   ];
 
+  // Only reject known non-housing equipment/supply contracts
   const REJECT = [
-    "pipe","coupling","shaft","valve","pump","bearing","fitting","gasket",
-    "bushing","nonmetallic","cable,","wire,","motor,","engine,","gear,",
-    "bracket","switch,","radio,","receiver,","amplifier","transmitter",
-    "antenna","connector","resistor","capacitor","circuit board","battery,",
-    "filter,","seal,","sleeve,","slide,","ammunition","weapon","missile",
-    "grenade","explosive","ordnance","aircraft","helicopter","fuselage",
-    "rotor,","propeller","turbine","truck,","trailer,","axle,","wheel,",
-    "tire,","brake,","hydraulic","pneumatic","cylinder,","piston",
-    "compressor,","curtain assembly","curtain,","power supply","power unit",
-    "generator set","food service equipment","catering equipment","uniform,",
-    "boot,","glove,","helmet,","laboratory equipment","reagent","specimen",
-    "chemical,","solvent","lumber,","concrete,","steel,","aluminum,","fuel,",
-    "buoy","crane,","hoist,","winch,","rigging","nsn:","nsn ","p/n ",
-    "part number","fsc ","qty:","dla land","dla aviation","dla maritime",
-    "facilities condition assessment","ranger district facilities",
-    "hpu start replacement","induct pipe","induct fitting",
-    "skin,aircraft","vane,pump","amplifier,radio","power,supply",
+    "coupling","shaft","valve","pump","bearing","fitting","gasket",
+    "bushing","nonmetallic","motor,","engine,","gear,",
+    "bracket","switch,","amplifier","transmitter",
+    "antenna","connector","resistor","capacitor","circuit board",
+    "ammunition","weapon","missile","grenade","explosive","ordnance",
+    "helicopter","fuselage","rotor,","propeller","turbine",
+    "axle,","hydraulic","pneumatic","cylinder,","piston","compressor,",
+    "curtain assembly","power unit","generator set",
+    "catering equipment","reagent","specimen","solvent",
+    "buoy","hoist,","winch,","rigging",
+    "nsn:","p/n ","part number","fsc ",
+    "dla land","dla aviation","dla maritime",
+    "facilities condition assessment",
+    "hpu start replacement",
   ];
 
-  const REQUIRE = [
-    "housing","lodging","hotel","motel","apartment","suite","furnished",
-    "residential","dwelling","accommodation","boarding","hostel",
-    "bed and breakfast","extended stay","tdy","billeting","quarters",
-    "relocation","workforce","yellow ribbon","sleeping room","transient",
-    "temporary housing","crew housing","medical resident","apartment rental",
-  ];
-
-  function isHousing(title) {
-    if (!title) return false;
+  // Only reject if title matches junk words -- pass everything else through
+  function isNotJunk(title) {
+    if (!title) return true;
     const t = title.toLowerCase();
     for (const w of REJECT) {
       if (t.includes(w)) return false;
     }
-    return REQUIRE.some(w => t.includes(w));
+    return true;
   }
 
   async function searchSAM(params, label) {
@@ -100,8 +91,8 @@ export default async (req) => {
       }
       const data = await res.json();
       const opps = data.opportunitiesData || data.opportunities || [];
-      const filtered = opps.filter(o => isHousing(o.title));
-      console.log(`[KD] ${label}: ${opps.length} raw -> ${filtered.length} housing`);
+      const filtered = opps.filter(o => isNotJunk(o.title));
+      console.log(`[KD] ${label}: ${opps.length} raw -> ${filtered.length} passed filter`);
       return filtered;
     } catch (err) {
       console.error(`[KD] ${label} error:`, err.message);
@@ -124,7 +115,7 @@ export default async (req) => {
     return true;
   });
 
-  console.log(`[KD Scanner v4] ${unique.length} unique housing contracts`);
+  console.log(`[KD Scanner v5] ${unique.length} unique contracts saved`);
 
   try {
     const store = getStore("kd-contracts");
@@ -133,9 +124,9 @@ export default async (req) => {
       contract_count: unique.length,
       contracts: unique,
     });
-    console.log(`[KD Scanner v4] Saved ${unique.length} contracts`);
+    console.log(`[KD Scanner v5] Saved ${unique.length} contracts to Blobs`);
   } catch (err) {
-    console.error("[KD Scanner v4] Save error:", err.message);
+    console.error("[KD Scanner v5] Save error:", err.message);
   }
 };
 
