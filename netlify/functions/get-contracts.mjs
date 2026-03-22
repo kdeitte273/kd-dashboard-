@@ -15,26 +15,37 @@ export default async function getContracts(req) {
     const data = await store.get("latest-scan", { type: "json" });
 
     if (!data) {
-      return new Response(JSON.stringify({
-        contracts: [],
-        contract_count: 0,
-        scan_time: null,
-        message: "No scan data yet"
-      }), { status: 200, headers });
+      return new Response(JSON.stringify([]), { status: 200, headers });
     }
 
-    return new Response(JSON.stringify({
-      contracts: data.contracts || [],
-      contract_count: data.contract_count || 0,
-      scan_time: data.scan_time || null
-    }), { status: 200, headers });
+    const raw = data.contracts || [];
+
+    const mapped = raw.map((c, i) => ({
+      id: i + 1,
+      notice_id: c.noticeId || c.solicitationNumber || String(i),
+      title: c.title || c.solicitationTitle || "Untitled Contract",
+      agency: c.fullParentPathName || c.department || "Unknown Agency",
+      notice_type: c.type || c.baseType || "solicitation",
+      city: c.placeOfPerformance?.city?.name || null,
+      state: c.placeOfPerformance?.state?.code || null,
+      deadline: c.responseDeadLine || c.archiveDate || null,
+      posted_date: c.postedDate || null,
+      set_aside: c.typeOfSetAsideDescription || null,
+      naics_code: c.naicsCode || null,
+      solicitation_number: c.solicitationNumber || null,
+      ui_link: c.uiLink || null,
+      description: c.description || null,
+      priority: 3,
+      status: "Open",
+      tags: ["Real SAM.gov Data"],
+      sow: c._sowRequirements || null,
+      vendor_call_list: c._vendorCallList || [],
+    }));
+
+    return new Response(JSON.stringify(mapped), { status: 200, headers });
 
   } catch (err) {
     console.error("[KD] get-contracts error:", err.message);
-    return new Response(JSON.stringify({
-      contracts: [],
-      contract_count: 0,
-      error: err.message
-    }), { status: 500, headers });
+    return new Response(JSON.stringify([]), { status: 500, headers });
   }
 }
