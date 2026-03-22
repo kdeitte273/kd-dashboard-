@@ -4,7 +4,7 @@ export default async (req) => {
   const SAM_API_KEY = Netlify.env.get("SAM_API_KEY");
   const ANTHROPIC_API_KEY = Netlify.env.get("ANTHROPIC_API_KEY");
 
-  console.log("[KD Background Scanner v1] Starting at", new Date().toISOString());
+  console.log("[KD Background Scanner v3] Starting at", new Date().toISOString());
 
   const BASE_URL = "https://api.sam.gov/opportunities/v2/search";
   const allContracts = [];
@@ -19,39 +19,92 @@ export default async (req) => {
   const postedTo = fmt(today);
   const delay = (ms) => new Promise((r) => setTimeout(r, ms));
 
+  // ── HOUSING-ONLY SEARCHES ─────────────────────────────────────────────────
   const searches = [
-  { naicsCode: "531110", label: "NAICS 531110 Residential Buildings and Dwellings" },
-  { naicsCode: "721110", label: "NAICS 721110 Hotels and Motels" },
-  { naicsCode: "721191", label: "NAICS 721191 Bed and Breakfast" },
-  { naicsCode: "721199", label: "NAICS 721199 All Other Traveler Accommodation" },
-  { naicsCode: "531190", label: "NAICS 531190 Other Real Estate Lessors" },
-  { naicsCode: "561599", label: "NAICS 561599 Travel Arrangement Services" },
-  { naicsCode: "721310", label: "NAICS 721310 Rooming and Boarding Houses" },
-    { keyword: "temporary housing", label: "Temporary housing" },
-    { keyword: "furnished housing", label: "Furnished housing" },
-    { keyword: "transitional housing", label: "Transitional housing" },
-    { keyword: "workforce housing", label: "Workforce housing" },
-    { keyword: "seasonal housing", label: "Seasonal housing" },
-    { keyword: "crew housing", label: "Crew housing" },
-    { keyword: "fire housing", label: "Fire housing" },
-    { keyword: "emergency housing", label: "Emergency housing" },
-    { keyword: "disaster housing", label: "Disaster housing" },
-    { keyword: "relocation housing", label: "Relocation housing" },
+    { naicsCode: "531110", label: "NAICS 531110 Residential Buildings" },
+    { naicsCode: "721110", label: "NAICS 721110 Hotels and Motels" },
+    { naicsCode: "721191", label: "NAICS 721191 Bed and Breakfast" },
+    { naicsCode: "721199", label: "NAICS 721199 All Other Traveler Accommodation" },
+    { naicsCode: "531190", label: "NAICS 531190 Other Real Estate Lessors" },
+    { naicsCode: "721310", label: "NAICS 721310 Rooming and Boarding Houses" },
+    { keyword: "temporary housing",       label: "Temporary housing" },
+    { keyword: "furnished housing",        label: "Furnished housing" },
+    { keyword: "transitional housing",     label: "Transitional housing" },
+    { keyword: "workforce housing",        label: "Workforce housing" },
+    { keyword: "seasonal housing",         label: "Seasonal housing" },
+    { keyword: "crew housing",             label: "Crew housing" },
+    { keyword: "fire housing",             label: "Fire housing" },
+    { keyword: "emergency housing",        label: "Emergency housing" },
+    { keyword: "disaster housing",         label: "Disaster housing" },
+    { keyword: "relocation housing",       label: "Relocation housing" },
     { keyword: "medical resident housing", label: "Medical resident housing" },
-    { keyword: "intern housing", label: "Intern housing" },
-    { keyword: "student housing government", label: "Student housing" },
-    { keyword: "construction site housing", label: "Construction site housing" },
-    { keyword: "hotel lodging", label: "Hotel lodging" },
-    { keyword: "temporary lodging", label: "Temporary lodging" },
-    { keyword: "TDY lodging", label: "TDY lodging" },
-    { keyword: "extended stay", label: "Extended stay" },
-    { keyword: "sleeping rooms", label: "Sleeping rooms" },
-    { keyword: "furnished apartment", label: "Furnished apartment" },
-    { keyword: "Yellow Ribbon", label: "Yellow Ribbon" },
-    { keyword: "conference hotel", label: "Conference hotel" },
-    { keyword: "corporate housing", label: "Corporate housing" },
+    { keyword: "intern housing",           label: "Intern housing" },
+    { keyword: "hotel lodging",            label: "Hotel lodging" },
+    { keyword: "temporary lodging",        label: "Temporary lodging" },
+    { keyword: "TDY lodging",              label: "TDY lodging" },
+    { keyword: "extended stay",            label: "Extended stay" },
+    { keyword: "sleeping rooms",           label: "Sleeping rooms" },
+    { keyword: "furnished apartment",      label: "Furnished apartment" },
+    { keyword: "Yellow Ribbon",            label: "Yellow Ribbon" },
+    { keyword: "conference hotel",         label: "Conference hotel" },
+    { keyword: "corporate housing",        label: "Corporate housing" },
+    { keyword: "lodging services",         label: "Lodging services" },
+    { keyword: "apartment rentals",        label: "Apartment rentals" },
+    { keyword: "billeting",                label: "Billeting" },
+    { keyword: "quarters",                 label: "Quarters" },
   ];
 
+  // ── BULLETPROOF HOUSING FILTER ────────────────────────────────────────────
+  // Step 1: Reject if title contains ANY of these non-housing words
+  const REJECT_WORDS = [
+    "pipe", "coupling", "shaft", "valve", "pump", "bearing", "fitting",
+    "gasket", "bushing", "bolt,", "nut,", "screw,", "washer,",
+    "nonmetallic", "cable,", "wire,", "motor,", "engine,", "gear,",
+    "bracket", "switch,", "radio,", "receiver,", "amplifier", "transmitter",
+    "antenna", "connector", "resistor", "capacitor", "circuit board",
+    "battery,", "filter,", "seal,", "sleeve,", "slide,",
+    "ammunition", "weapon", "missile", "grenade", "explosive", "ordnance",
+    "aircraft", "helicopter", "fuselage", "rotor,", "propeller", "turbine",
+    "truck,", "trailer,", "axle,", "wheel,", "tire,", "brake,",
+    "hydraulic", "pneumatic", "cylinder,", "piston", "compressor,",
+    "curtain assembly", "curtain,",
+    "power supply", "power unit", "generator set", "alternator,",
+    "food service equipment", "catering equipment",
+    "uniform,", "boot,", "glove,", "helmet,",
+    "laboratory equipment", "reagent", "specimen", "chemical,", "solvent",
+    "lumber,", "concrete,", "steel,", "aluminum,", "fuel,",
+    "buoy", "crane,", "hoist,", "winch,", "rigging",
+    "nsn:", "nsn ", "p/n ", "part number", "fsc ",
+    "qty:", "dla land", "dla aviation", "dla maritime",
+    "facilities condition assessment",
+    "ranger district facilities",
+    "hpu start replacement",
+    "induct pipe", "induct fitting",
+  ];
+
+  // Step 2: Must contain at least one housing word to pass
+  const REQUIRE_ONE_OF = [
+    "housing", "lodging", "hotel", "motel", "apartment", "suite",
+    "furnished", "temporary lodging", "residential", "dwelling",
+    "accommodation", "boarding", "hostel", "bed and breakfast",
+    "extended stay", "tdy", "billeting", "quarters", "barracks",
+    "relocation", "workforce", "seasonal housing", "fire crew housing",
+    "yellow ribbon", "sail 250", "sleeping room", "transient",
+    "temporary housing", "crew housing", "intern housing",
+  ];
+
+  function isHousingContract(title) {
+    if (!title) return false;
+    const t = title.toLowerCase();
+    // Reject if any non-housing word found
+    for (const word of REJECT_WORDS) {
+      if (t.includes(word)) return false;
+    }
+    // Must have at least one housing word
+    return REQUIRE_ONE_OF.some(word => t.includes(word));
+  }
+
+  // ── SAM.GOV SEARCH ────────────────────────────────────────────────────────
   async function searchSAM(params, label) {
     const url = new URL(BASE_URL);
     url.searchParams.set("api_key", SAM_API_KEY);
@@ -70,20 +123,9 @@ export default async (req) => {
       }
       const data = await res.json();
       const opps = data.opportunitiesData || data.opportunities || [];
-      console.log(`[KD] ${label}: found ${opps.length}`);
-      const HOUSING_BLOCK = [
-  "pipe","switch","radio","receiver","coupling","shaft","valve","pump",
-  "cable","wire","motor","engine","aircraft","ammunition","weapon",
-  "vehicle","truck","curtain","power supply","food service","catering",
-  "uniform","clothing","laboratory","lumber","concrete","steel","fuel",
-  "nonmetallic","liquid","assembly","induct","seal","fitting","bearing"
-];
-const filtered = opps.filter(o => {
-  const title = (o.title || "").toLowerCase();
-  return !HOUSING_BLOCK.some(kw => title.includes(kw));
-});
-console.log(`[KD] ${label}: ${opps.length} raw → ${filtered.length} after housing filter`);
-return filtered;
+      const filtered = opps.filter(o => isHousingContract(o.title));
+      console.log(`[KD] ${label}: ${opps.length} raw → ${filtered.length} housing contracts`);
+      return filtered;
     } catch (err) {
       console.error(`[KD] ${label} error:`, err.message);
       errors.push({ label, error: err.message });
@@ -91,6 +133,7 @@ return filtered;
     }
   }
 
+  // ── AI ENRICHMENT ─────────────────────────────────────────────────────────
   async function enrichContract(contract) {
     if (!ANTHROPIC_API_KEY) return contract;
     const city = contract.placeOfPerformance?.city?.name || "";
@@ -98,28 +141,27 @@ return filtered;
     const description = contract.description || contract.synopsis || "";
     const title = contract.title || contract.solicitationTitle || "";
 
-    const prompt = `You are analyzing a US government contract for KD Modern Rentals LLC (WOSB housing contractor).
+    const prompt = `You are analyzing a US government housing contract for KD Modern Rentals LLC (WOSB housing contractor).
 CONTRACT: ${title}
 LOCATION: ${city}, ${state}
-DESCRIPTION: ${description}
+DESCRIPTION: ${description.slice(0, 500)}
 
-Extract requirements and respond ONLY with valid JSON:
+Respond ONLY with valid JSON, no other text:
 {
-  "propType": "<hotel, apartment, cottage, or other>",
+  "propType": "<hotel, apartment, or mixed>",
   "totalUnitsOrRooms": <number or null>,
-  "startDate": "<date or null>",
-  "endDate": "<date or null>",
-  "setAside": "<WOSB, Small Business, 8a, Unrestricted>",
-  "estimatedValue": "<dollar amount or null>",
+  "estimatedNightsPerYear": <number or null>,
+  "estimatedAnnualValue": <number or null>,
+  "profitPotential": "<high, medium, or low>",
+  "setAside": "<WOSB, Small Business, 8a, SDVOSB, or Unrestricted>",
   "pocName": "<name or null>",
   "pocEmail": "<email or null>",
   "pocPhone": "<phone or null>",
-  "requiresParking": <true/false>,
-  "requiresWifi": <true/false>,
-  "requiresKitchen": <true/false>,
-  "requiresLaundry": <true/false>,
-  "requiresADA": <true/false>,
-  "vendorSuggestions": ["<3 to 5 specific hotel or apartment names in that city that could fulfill this>"]
+  "requiresParking": <true or false>,
+  "requiresWifi": <true or false>,
+  "requiresKitchen": <true or false>,
+  "requiresLaundry": <true or false>,
+  "requiresADA": <true or false>
 }`;
 
     try {
@@ -127,15 +169,18 @@ Extract requirements and respond ONLY with valid JSON:
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 800,
+          model: "claude-haiku-4-5-20251001",
+          max_tokens: 500,
           messages: [{ role: "user", content: prompt }],
         }),
       });
       if (!res.ok) return contract;
       const data = await res.json();
       const text = data.content?.[0]?.text || "";
-      const parsed = JSON.parse(text.replace(/```json|```/g, "").trim());
+      const start = text.indexOf("{");
+      const end = text.lastIndexOf("}");
+      if (start === -1 || end === -1) return contract;
+      const parsed = JSON.parse(text.slice(start, end + 1));
       return { ...contract, _enriched: true, _sowRequirements: parsed, _enrichedAt: new Date().toISOString() };
     } catch (err) {
       console.error("[KD] Enrich error:", err.message);
@@ -143,6 +188,7 @@ Extract requirements and respond ONLY with valid JSON:
     }
   }
 
+  // ── RUN ALL SEARCHES ──────────────────────────────────────────────────────
   for (const search of searches) {
     const { label, ...params } = search;
     const results = await searchSAM(params, label);
@@ -150,25 +196,28 @@ Extract requirements and respond ONLY with valid JSON:
     await delay(2000);
   }
 
+  // ── DEDUPLICATE ───────────────────────────────────────────────────────────
   const seen = new Set();
   const unique = allContracts.filter((c) => {
-    const id = c.noticeId || c.solicitationNumber || JSON.stringify(c).slice(0, 50);
+    const id = c.noticeId || c.solicitationNumber || c.title + c.postedDate;
     if (seen.has(id)) return false;
     seen.add(id);
     return true;
   });
 
-  console.log(`[KD Background Scanner v1] Found ${unique.length} unique contracts`);
+  console.log(`[KD Scanner v3] ${unique.length} unique housing contracts after dedup`);
 
+  // ── ENRICH WITH AI ────────────────────────────────────────────────────────
   const enriched = [];
   for (const contract of unique) {
     const enrichedContract = await enrichContract(contract);
     enriched.push(enrichedContract);
-    await delay(500);
+    await delay(300);
   }
 
-  console.log(`[KD Background Scanner v1] Enriched ${enriched.length} contracts`);
+  console.log(`[KD Scanner v3] Enriched ${enriched.length} contracts`);
 
+  // ── SAVE TO BLOBS ─────────────────────────────────────────────────────────
   try {
     const store = getStore("kd-contracts");
     await store.setJSON("latest-scan", {
@@ -176,9 +225,9 @@ Extract requirements and respond ONLY with valid JSON:
       contract_count: enriched.length,
       contracts: enriched,
     });
-    console.log(`[KD Background Scanner v1] Saved ${enriched.length} contracts successfully`);
+    console.log(`[KD Scanner v3] Saved ${enriched.length} contracts to Blobs`);
   } catch (err) {
-    console.error("[KD Background Scanner v1] Save error:", err.message);
+    console.error("[KD Scanner v3] Save error:", err.message);
   }
 };
 
