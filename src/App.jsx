@@ -3306,8 +3306,7 @@ function convertSupabaseContract(c, index) {
 async function fetchFromSupabase() {
   try {
     const res = await fetch(
-      SUPABASE_URL + "/rest/v1/contracts?select=*&order=priority.asc,deadline.asc&limit=500",
-      {headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+SUPABASE_KEY}}
+     "/.netlify/functions/get-contracts"
     );
     if (!res.ok) return [];
     const data = await res.json();
