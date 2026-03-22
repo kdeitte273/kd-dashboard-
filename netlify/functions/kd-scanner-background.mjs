@@ -3,7 +3,7 @@ import { getStore } from "@netlify/blobs";
 export default async (req) => {
   const SAM_API_KEY = Netlify.env.get("SAM_API_KEY");
 
-  console.log("[KD Scanner v5] Starting at", new Date().toISOString());
+  console.log("[KD Scanner v6] Starting at", new Date().toISOString());
 
   const BASE_URL = "https://api.sam.gov/opportunities/v2/search";
   const allContracts = [];
@@ -18,7 +18,6 @@ export default async (req) => {
   const delay = (ms) => new Promise((r) => setTimeout(r, ms));
 
   const searches = [
-    
     { keyword: "temporary housing",        label: "Temporary housing" },
     { keyword: "furnished housing",         label: "Furnished housing" },
     { keyword: "transitional housing",      label: "Transitional housing" },
@@ -42,7 +41,6 @@ export default async (req) => {
     { keyword: "billeting",                 label: "Billeting" },
   ];
 
-  // Only reject known non-housing equipment/supply contracts
   const REJECT = [
     "coupling","shaft","valve","pump","bearing","fitting","gasket",
     "bushing","nonmetallic","motor,","engine,","gear,",
@@ -60,7 +58,6 @@ export default async (req) => {
     "hpu start replacement",
   ];
 
-  // Only reject if title matches junk words -- pass everything else through
   function isNotJunk(title) {
     if (!title) return true;
     const t = title.toLowerCase();
@@ -77,7 +74,10 @@ export default async (req) => {
     url.searchParams.set("postedFrom", postedFrom);
     url.searchParams.set("postedTo", postedTo);
     url.searchParams.set("active", "true");
-    for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
+    // KEY FIX: map "keyword" to "title" — SAM.gov API only supports title search, not keyword
+    for (const [k, v] of Object.entries(params)) {
+      url.searchParams.set(k === "keyword" ? "title" : k, v);
+    }
     try {
       const res = await fetch(url.toString());
       if (!res.ok) {
@@ -111,7 +111,7 @@ export default async (req) => {
     return true;
   });
 
-  console.log(`[KD Scanner v5] ${unique.length} unique contracts saved`);
+  console.log(`[KD Scanner v6] ${unique.length} unique housing contracts`);
 
   try {
     const store = getStore("kd-contracts");
@@ -120,9 +120,9 @@ export default async (req) => {
       contract_count: unique.length,
       contracts: unique,
     });
-    console.log(`[KD Scanner v5] Saved ${unique.length} contracts to Blobs`);
+    console.log(`[KD Scanner v6] Saved ${unique.length} contracts to Blobs`);
   } catch (err) {
-    console.error("[KD Scanner v5] Save error:", err.message);
+    console.error("[KD Scanner v6] Save error:", err.message);
   }
 };
 
