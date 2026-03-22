@@ -20,6 +20,45 @@ export default async function getContracts(req) {
 
     const raw = data.contracts || [];
 
+    // ── TITLE FILTER — reject non-housing contracts ─────────────────────────
+    const TITLE_REJECT = [
+      "ring,","cell,","plug,","hose,","nut,","bolt,","screw,","washer",
+      "coupling","shaft","valve","pump","bearing","fitting","gasket",
+      "bushing","nonmetallic","motor,","engine,","gear,","bracket",
+      "switch,","amplifier","transmitter","antenna","connector","resistor",
+      "capacitor","circuit board","ammunition","weapon","missile","grenade",
+      "explosive","ordnance","helicopter","fuselage","rotor,","propeller",
+      "turbine","axle,","hydraulic","pneumatic","cylinder,","piston",
+      "compressor,","curtain assembly","power unit","generator set",
+      "catering equipment","reagent","specimen","solvent","buoy",
+      "hoist,","winch,","rigging","nsn:","p/n ","part number","fsc ",
+      "dla land","dla aviation","dla maritime","facilities condition",
+      "hpu start","induct pipe","skin,","vane,pump","heat sink",
+      "sleeve,","slide,di","electrica","wire,","cable,","radio,",
+      "receiver,","battery,","filter,","seal,","pipe,",
+    ];
+
+    const TITLE_REQUIRE = [
+      "housing","lodging","hotel","motel","apartment","suite","furnished",
+      "residential","dwelling","accommodation","boarding","hostel",
+      "bed and breakfast","extended stay","tdy","billeting","quarters",
+      "relocation","workforce","yellow ribbon","sleeping room","transient",
+      "medical resident","temporary lodging","crew housing","fire housing",
+      "emergency housing","disaster housing","intern housing",
+    ];
+
+    function isHousingTitle(title) {
+      if (!title) return false;
+      const t = title.toLowerCase();
+      for (const w of TITLE_REJECT) {
+        if (t.includes(w)) return false;
+      }
+      return TITLE_REQUIRE.some(w => t.includes(w));
+    }
+
+    const housingRaw = raw.filter(c => isHousingTitle(c.title || c.solicitationTitle));
+    console.log(`[KD get-contracts] ${raw.length} raw -> ${housingRaw.length} housing after title filter`);
+
     // ── NOTICE TYPE NORMALIZER ──────────────────────────────────────────────
     function normalizeNoticeType(raw) {
       if (!raw) return "solicitation";
@@ -63,71 +102,46 @@ export default async function getContracts(req) {
     }
 
     // ── PRIORITY SCORER ─────────────────────────────────────────────────────
-    // Returns 1 (highest) to 99 (lowest)
     function calcPriority(noticeType, setAside, deadline, profitPotential) {
-      let score = 50;
-
-      // Notice type weight
       const typeScore = {
-        solicitation: 10,
-        combined_synopsis: 12,
-        sources_sought: 20,
-        pre_solicitation: 30,
-        blanket_purchase: 35,
-        idiq: 35,
-        award_notice: 80,
-        special_notice: 85,
-        justification: 88,
-        modification: 90,
+        solicitation: 10, combined_synopsis: 12, sources_sought: 20,
+        pre_solicitation: 30, blanket_purchase: 35, idiq: 35,
+        award_notice: 80, special_notice: 85, justification: 88, modification: 90,
       };
-      score = typeScore[noticeType] || 50;
-
-      // Set aside boost — WOSB gets priority
+      let score = typeScore[noticeType] || 50;
       if (setAside === "WOSB") score -= 3;
       if (setAside === "Small Business") score -= 1;
-
-      // Deadline urgency boost
       if (deadline) {
         const days = Math.ceil((new Date(deadline) - new Date()) / 86400000);
-        if (days <= 7)  score -= 5;
-        if (days <= 14) score -= 3;
-        if (days <= 30) score -= 1;
+        if (days <= 7) score -= 5;
+        else if (days <= 14) score -= 3;
+        else if (days <= 30) score -= 1;
       }
-
-      // Profit potential boost
-      if (profitPotential === "high")   score -= 4;
+      if (profitPotential === "high") score -= 4;
       if (profitPotential === "medium") score -= 2;
-
       return Math.max(1, score);
     }
 
     // ── PROFIT ESTIMATOR ────────────────────────────────────────────────────
-    // Estimates monthly profit based on GSA rates and enrichment data
     const GSA_RATES = {
-      // Key markets — lodging per night
-      "WI": 140, "FL": 162, "AL": 126, "CA": 182, "NY": 296,
-      "TX": 161, "GA": 130, "VA": 118, "MD": 153, "DC": 258,
-      "CO": 167, "AZ": 127, "NV": 124, "WA": 205, "OR": 156,
-      "NC": 128, "SC": 138, "TN": 160, "OH": 110, "IL": 200,
-      "MN": 134, "MO": 110, "LA": 134, "OK": 110, "NM": 110,
+      "WI":140,"FL":162,"AL":126,"CA":182,"NY":296,"TX":161,"GA":130,
+      "VA":118,"MD":153,"DC":258,"CO":167,"AZ":127,"NV":124,"WA":205,
+      "OR":156,"NC":128,"SC":138,"TN":160,"OH":110,"IL":200,"MN":134,
+      "MO":110,"LA":134,"OK":110,"NM":110,"NJ":178,"PA":118,"MA":232,
     };
 
     function estimateMonthlyProfit(c, sow, state) {
       const gsaRate = GSA_RATES[state] || 110;
       const bidRate = Math.round(gsaRate * 0.98);
       const units = sow?.totalUnitsOrRooms || 5;
-      const nights = sow?.estimatedNightsPerYear
-        ? Math.round(sow.estimatedNightsPerYear / 12)
-        : 20;
+      const nights = sow?.estimatedNightsPerYear ? Math.round(sow.estimatedNightsPerYear / 12) : 20;
       const revenue = bidRate * units * nights;
-      // Rough cost: 55% for apartments, 45% for hotels (subcontracted)
       const costPct = detectPropType(c.title, c.naicsCode) === "apartment" ? 0.55 : 0.45;
-      const profit = Math.round(revenue * (1 - costPct));
-      return profit;
+      return Math.round(revenue * (1 - costPct));
     }
 
     // ── MAP CONTRACTS ───────────────────────────────────────────────────────
-    const mapped = raw.map((c, i) => {
+    const mapped = housingRaw.map((c, i) => {
       const noticeType = normalizeNoticeType(c.type || c.baseType);
       const sow = c._sowRequirements || null;
       const state = c.placeOfPerformance?.state?.code || null;
@@ -141,7 +155,6 @@ export default async function getContracts(req) {
       const estimatedProfit = estimateMonthlyProfit(c, sow, state);
       const priority = calcPriority(noticeType, setAside, deadline, profitPotential);
 
-      // Build tags
       const tags = ["Real SAM.gov"];
       if (setAside && setAside !== "Unrestricted") tags.push(setAside);
       if (city) tags.push(city);
@@ -151,13 +164,10 @@ export default async function getContracts(req) {
       if (profitPotential === "high") tags.push("HIGH PROFIT");
 
       return {
-        // IDs -- all formats so search works
         id: "sb_" + noticeId.replace(/[^a-zA-Z0-9]/g, "_"),
         notice_id: noticeId,
         solicitation_number: solNumber,
         sol: solNumber || noticeId,
-
-        // Core fields
         title: c.title || c.solicitationTitle || "Untitled Contract",
         agency: c.fullParentPathName || c.department || "Unknown Agency",
         notice_type: noticeType,
@@ -171,19 +181,13 @@ export default async function getContracts(req) {
         set_aside: setAside,
         naics: c.naicsCode || null,
         naics_code: c.naicsCode || null,
-
-        // Dates
         deadline: deadline || "2099-01-01",
         posted_date: c.postedDate || null,
         moveInDate: null,
-
-        // Scoring
         priority,
         rank: i + 1,
         profitPotential,
         estimatedMonthlyProfit: estimatedProfit,
-
-        // Display
         value: sow?.estimatedAnnualValue
           ? "$" + Number(sow.estimatedAnnualValue).toLocaleString()
           : "Verify on SAM.gov",
@@ -196,12 +200,8 @@ export default async function getContracts(req) {
         realData: true,
         scannedIn: true,
         tags,
-
-        // Links
         ui_link: c.uiLink || null,
         poc: sow?.pocEmail || "Verify on SAM.gov",
-
-        // SOW
         description: c.description || null,
         sow: {
           units: sow?.totalUnitsOrRooms ? String(sow.totalUnitsOrRooms) + " units" : "Verify on SAM.gov",
@@ -229,23 +229,13 @@ export default async function getContracts(req) {
             scheduleNotes: "Full schedule in SAM.gov solicitation documents.",
           },
         },
-
-        // Extension placeholder
-        extension: {
-          extendable: false,
-          options: 0,
-          length: "N/A",
-          totalDuration: "Verify on SAM.gov",
-        },
-
-        // Next action
+        extension: { extendable: false, options: 0, length: "N/A", totalDuration: "Verify on SAM.gov" },
         nextAction: c.uiLink
           ? "View full notice on SAM.gov: " + c.uiLink
           : "Search Notice ID " + noticeId + " on SAM.gov for full details.",
       };
     });
 
-    // ── SORT: highest profit first within same priority tier ────────────────
     mapped.sort((a, b) => {
       if (a.priority !== b.priority) return a.priority - b.priority;
       return b.estimatedMonthlyProfit - a.estimatedMonthlyProfit;
@@ -261,20 +251,20 @@ export default async function getContracts(req) {
 
 function getRegion(state) {
   const map = {
-    WI:"Midwest", IL:"Midwest", MN:"Midwest", MI:"Midwest", OH:"Midwest",
-    IN:"Midwest", MO:"Midwest", IA:"Midwest", ND:"Midwest", SD:"Midwest",
-    NE:"Midwest", KS:"Midwest",
-    FL:"Southeast", GA:"Southeast", AL:"Southeast", MS:"Southeast",
-    SC:"Southeast", NC:"Southeast", TN:"Southeast", KY:"Southeast",
-    VA:"Southeast", WV:"Southeast", AR:"Southeast",
-    NY:"Northeast", NJ:"Northeast", PA:"Northeast", MA:"Northeast",
-    CT:"Northeast", RI:"Northeast", NH:"Northeast", VT:"Northeast",
-    ME:"Northeast", MD:"Northeast", DE:"Northeast", DC:"Northeast",
-    TX:"Southwest", LA:"Southwest", OK:"Southwest", NM:"Southwest", AZ:"Southwest",
-    CO:"Mountain/West", UT:"Mountain/West", NV:"Mountain/West",
-    WY:"Mountain/West", MT:"Mountain/West", ID:"Mountain/West",
-    CA:"Mountain/West", OR:"Mountain/West", WA:"Mountain/West",
-    AK:"Mountain/West", HI:"Mountain/West",
+    WI:"Midwest",IL:"Midwest",MN:"Midwest",MI:"Midwest",OH:"Midwest",
+    IN:"Midwest",MO:"Midwest",IA:"Midwest",ND:"Midwest",SD:"Midwest",
+    NE:"Midwest",KS:"Midwest",
+    FL:"Southeast",GA:"Southeast",AL:"Southeast",MS:"Southeast",
+    SC:"Southeast",NC:"Southeast",TN:"Southeast",KY:"Southeast",
+    VA:"Southeast",WV:"Southeast",AR:"Southeast",
+    NY:"Northeast",NJ:"Northeast",PA:"Northeast",MA:"Northeast",
+    CT:"Northeast",RI:"Northeast",NH:"Northeast",VT:"Northeast",
+    ME:"Northeast",MD:"Northeast",DE:"Northeast",DC:"Northeast",
+    TX:"Southwest",LA:"Southwest",OK:"Southwest",NM:"Southwest",AZ:"Southwest",
+    CO:"Mountain/West",UT:"Mountain/West",NV:"Mountain/West",
+    WY:"Mountain/West",MT:"Mountain/West",ID:"Mountain/West",
+    CA:"Mountain/West",OR:"Mountain/West",WA:"Mountain/West",
+    AK:"Mountain/West",HI:"Mountain/West",
   };
   return map[state] || "Other";
 }
