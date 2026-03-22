@@ -71,7 +71,19 @@ export default async (req) => {
       const data = await res.json();
       const opps = data.opportunitiesData || data.opportunities || [];
       console.log(`[KD] ${label}: found ${opps.length}`);
-      return opps;
+      const HOUSING_BLOCK = [
+  "pipe","switch","radio","receiver","coupling","shaft","valve","pump",
+  "cable","wire","motor","engine","aircraft","ammunition","weapon",
+  "vehicle","truck","curtain","power supply","food service","catering",
+  "uniform","clothing","laboratory","lumber","concrete","steel","fuel",
+  "nonmetallic","liquid","assembly","induct","seal","fitting","bearing"
+];
+const filtered = opps.filter(o => {
+  const title = (o.title || "").toLowerCase();
+  return !HOUSING_BLOCK.some(kw => title.includes(kw));
+});
+console.log(`[KD] ${label}: ${opps.length} raw → ${filtered.length} after housing filter`);
+return filtered;
     } catch (err) {
       console.error(`[KD] ${label} error:`, err.message);
       errors.push({ label, error: err.message });
