@@ -3251,25 +3251,105 @@ const SUPABASE_URL = "https://gfbgxgoykboclvfeaaeo.supabase.co";
 const SUPABASE_KEY = "sb_publishable_j7lVIgpMvY6DOMca01MYtw_HzclLkqKOGch7BYl3bwv_UVT0TBsFhyoWY83Cxe1q";
 
 // Convert Supabase contract to dashboard format
+function normalizeNoticeType(raw) {
+  if (!raw) return "solicitation";
+  const s = raw.toLowerCase().replace(/[^a-z]/g, "");
+  if (s.includes("combined")) return "combined_synopsis";
+  if (s.includes("sourcessought") || (s.includes("sources") && s.includes("sought"))) return "sources_sought";
+  if (s.includes("presolicitation") || s.includes("presol")) return "pre_solicitation";
+  if (s.includes("awardnotice") || (s.includes("award") && s.includes("notice"))) return "award_notice";
+  if (s.includes("justification")) return "justification";
+  if (s.includes("modification")) return "modification";
+  if (s.includes("specialnotice") || (s.includes("special") && s.includes("notice"))) return "special_notice";
+  if (s.includes("blanket")) return "blanket_purchase";
+  if (s.includes("idiq")) return "idiq";
+  if (s.includes("solicitation")) return "solicitation";
+  return "solicitation";
+}
+
+function normalizePropType(raw, naics) {
+  if (!raw) {
+    const n = String(naics || "");
+    if (n.startsWith("721")) return "hotel";
+    return "apartment";
+  }
+  const s = raw.toLowerCase();
+  if (s.includes("hotel") || s.includes("motel") || s.includes("lodg")) return "hotel";
+  if (s.includes("apart") || s.includes("resid") || s.includes("furnish")) return "apartment";
+  return "mixed";
+}
+
+function normalizeSetAside(raw) {
+  if (!raw) return "Unrestricted";
+  const s = raw.toLowerCase();
+  if (s.includes("wosb") || s.includes("women-owned") || s.includes("women owned")) return "WOSB";
+  if (s.includes("small business")) return "Small Business";
+  if (s.includes("sdvosb")) return "SDVOSB";
+  if (s.includes("8(a)")) return "8(a)";
+  if (s.includes("unrestricted") || s.includes("full and open")) return "Unrestricted";
+  return raw;
+}
+
 function convertSupabaseContract(c, index) {
-  const noticeType = c.notice_type || "solicitation";
+  const noticeType = normalizeNoticeType(c.notice_type || c.noticeType);
+  const propType = normalizePropType(c.prop_type || c.propType, c.naics_code || c.naics);
+  const setAside = normalizeSetAside(c.set_aside || c.setAside);
+  const sol = c.solicitation_number || c.sol || c.notice_id || ("UNKNOWN-" + index);
+  const naics = c.naics_code || c.naics || "531110";
+  const city = c.city || "TBD";
+  const state = c.state || "";
+  const noticeId = c.notice_id || sol;
+
   const priorityMap = {
-    solicitation:2,combined_synopsis:3,sources_sought:4,pre_solicitation:5,
-    blanket_purchase:6,idiq:7,award_notice:8,special_notice:9,justification:10,modification:11
+    solicitation:2, combined_synopsis:3, sources_sought:4, pre_solicitation:5,
+    blanket_purchase:6, idiq:7, award_notice:8, special_notice:9,
+    justification:10, modification:11
   };
+
+  const regionMap = {
+    WI:"Midwest", IL:"Midwest", MN:"Midwest", MI:"Midwest", OH:"Midwest",
+    IN:"Midwest", MO:"Midwest", IA:"Midwest", ND:"Midwest", SD:"Midwest",
+    NE:"Midwest", KS:"Midwest",
+    FL:"Southeast", GA:"Southeast", AL:"Southeast", MS:"Southeast",
+    SC:"Southeast", NC:"Southeast", TN:"Southeast", KY:"Southeast",
+    VA:"Southeast", WV:"Southeast", AR:"Southeast",
+    NY:"Northeast", NJ:"Northeast", PA:"Northeast", MA:"Northeast",
+    CT:"Northeast", RI:"Northeast", NH:"Northeast", VT:"Northeast",
+    ME:"Northeast", MD:"Northeast", DE:"Northeast", DC:"Northeast",
+    TX:"Southwest", LA:"Southwest", OK:"Southwest", NM:"Southwest", AZ:"Southwest",
+    CO:"Mountain/West", UT:"Mountain/West", NV:"Mountain/West",
+    WY:"Mountain/West", MT:"Mountain/West", ID:"Mountain/West",
+    CA:"Mountain/West", OR:"Mountain/West", WA:"Mountain/West",
+    AK:"Mountain/West", HI:"Mountain/West",
+  };
+  const region = regionMap[state] || "Other";
+
+  const statusMap = {
+    solicitation: "Active Pursuit",
+    combined_synopsis: "Active Pursuit",
+    sources_sought: "Respond Now",
+    pre_solicitation: "On Radar",
+    blanket_purchase: "On Radar",
+    idiq: "On Radar",
+    award_notice: "On Radar",
+    special_notice: "On Radar",
+    justification: "On Radar",
+    modification: "On Radar",
+  };
+
   return {
-    id: "sb_" + (c.notice_id||index).toString().replace(/[^a-zA-Z0-9]/g,"_"),
+    id: "sb_" + noticeId.toString().replace(/[^a-zA-Z0-9]/g, "_"),
     rank: index + 1,
-    sol: c.sol || c.notice_id || "UNKNOWN",
+    sol,
     title: c.title || "Untitled Contract",
     agency: c.agency || "Federal Agency",
-    city: c.city || "TBD",
-    state: c.state || "",
-    region: c.region || "Other",
+    city,
+    state,
+    region,
     noticeType,
-    propType: c.prop_type || "mixed",
-    setAside: c.set_aside || "Unrestricted",
-    naics: c.naics || "531110",
+    propType,
+    setAside,
+    naics,
     value: "Verify on SAM.gov",
     deadline: c.deadline || "2099-01-01",
     moveInDate: null,
@@ -3277,31 +3357,43 @@ function convertSupabaseContract(c, index) {
     verified: true,
     realData: true,
     scannedIn: true,
-    status: noticeType==="solicitation"?"Active Pursuit":noticeType==="sources_sought"?"Respond Now":"On Radar",
-    tags: ["Real SAM.gov Data", c.set_aside||"Open", c.city||"", c.state||""].filter(Boolean),
-    extension: {extendable:false,options:0,length:"N/A",totalDuration:"Verify on SAM.gov"},
+    status: statusMap[noticeType] || "On Radar",
+    tags: [
+      "Real SAM.gov",
+      setAside,
+      city,
+      state,
+      noticeType === "solicitation" ? "BID NOW" : noticeType === "combined_synopsis" ? "BID NOW" : "",
+    ].filter(Boolean),
+    extension: { extendable:false, options:0, length:"N/A", totalDuration:"Verify on SAM.gov" },
     sow: {
       units: "Verify on SAM.gov",
       duration: "Verify on SAM.gov",
-      location: (c.city||"TBD") + (c.state?", "+c.state:""),
+      location: city + (state ? ", " + state : ""),
       amenities: [],
       utilities: [],
       requirements: [
-        "Pull full SOW from SAM.gov — search Notice ID " + (c.notice_id||""),
+        "Pull full SOW from SAM.gov — search Notice ID " + noticeId,
         "Verify set-aside eligibility before bidding",
         "Check all attachments on SAM.gov",
       ],
       lodgingSchedule: {
-        type:"continuous",typeLabel:"Verify on SAM.gov",
-        nightsPerYear:null,weeksPerYear:null,
-        specificDates:"Pull from SAM.gov Notice ID "+(c.notice_id||""),
-        scheduleNotes:"Full schedule in SAM.gov solicitation documents.",
+        type: "continuous",
+        typeLabel: "📅 Verify on SAM.gov",
+        nightsPerYear: null,
+        weeksPerYear: null,
+        specificDates: "Pull from SAM.gov Notice ID " + noticeId,
+        scheduleNotes: "Full schedule in SAM.gov solicitation documents.",
       },
     },
-    nextAction: "Search Notice ID "+(c.notice_id||"")+" on SAM.gov for full details, SOW, deadline, and requirements.",
-    priority: priorityMap[noticeType]||99,
+    nextAction:
+      c.ui_link
+        ? "View full notice on SAM.gov: " + c.ui_link
+        : "Search Notice ID " + noticeId + " on SAM.gov for full details, SOW, deadline, and set-aside requirements.",
+    priority: priorityMap[noticeType] || 99,
   };
 }
+
 
 async function fetchFromSupabase() {
   try {
